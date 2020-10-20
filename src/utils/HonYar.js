@@ -6,7 +6,7 @@ import SmartPadSDK from './SmartPadSDK'
 import Bridge from '../config/JSbridge.js'
 
 
-const Tool = {
+const HonYar = {
     /**获取用户信息 */
     getUserId(func) {
         let request = {
@@ -846,4 +846,4 @@ const Tool = {
 
 }
 
-export default Tool
+export default HonYar
