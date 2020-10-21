@@ -35,14 +35,11 @@ export default {
       let _this = this;
       this.$bridge.registerHandler("nativeSignal", (data, responseCallback) => {
       //  console.log("上报1", JSON.parse(data));
-        if (JSON.parse(data).request !== undefined && JSON.parse(data).request.signalType == "showConnectInfo") {
-          this.connect_status = JSON.parse(data).params.showMessage;
-        }
         let _data = JSON.parse(data);
         //监听返回键
         if(_data.request.signalType){
             if(_data.request.signalType == 'back'){
-              _this.loading.show = false
+              //物理键返回执行
             }
         }
         this.$store.dispatch("updateNativeSignal", data);
@@ -55,7 +52,7 @@ export default {
         if(_data.request){
           if(_data.request.signalType){
             if(_data.request.signalType == 'back'){
-              _this.loading.show = false
+              //物理键返回执行
             }
         }
         }
