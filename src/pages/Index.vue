@@ -1,5 +1,5 @@
 <template>
-  <div class="main" v-if="theme_img.length > 0">
+  <div class="main">
   </div>
 </template>
 <script>
