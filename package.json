@@ -12,6 +12,7 @@
   "dependencies": {
     "@tweenjs/tween.js": "^18.6.0",
     "axios": "^0.19.2",
+    "babel-polyfill": "^6.26.0",
     "vue": "^2.5.2",
     "vue-jsonp": "^0.1.8",
     "vue-router": "^3.0.1",

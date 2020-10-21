@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import Tool from '@/utils/Tool'
+import Tool from '@/utils/HonYar'
 import axios from 'axios'
 export default {
   name: 'App',
