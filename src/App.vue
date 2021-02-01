@@ -163,11 +163,11 @@ export default {
           //console.log("设备子属性",res)
           if(JSON.parse(res).code === 200){
             let props = JSON.parse(res).data;
+            let allObj = {}
             for(let a = 0;a<props.length;a++){
-              let obj = {};
-              obj[props[a].attribute] = props[a].value
-              _this.$store.dispatch("changeProp",obj)
+              allObj[props[a].attribute] = props[a].value
             }
+            _this.$store.dispatch("changeProp",allObj)
           }else{
             HonYar.show_toast("获取设备属性失败"+res,(res)=>{})
           }
@@ -231,7 +231,7 @@ html,body,#app {
   font-family:PingFang SC;
   width: 100%;
   height: 100%;
-  background-color: white;
+  background-color: RGBA(246, 246, 246, 1);
 }
 
 

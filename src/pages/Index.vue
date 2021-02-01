@@ -6,14 +6,14 @@
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
           
         </DropDown-Refresh> -->
-        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal">
-          <Main-Power-Switch :status="dev_props.powerstate" @event="power_event"></Main-Power-Switch>
-        </Module-Frame>
-        <!-- <List-Modal></List-Modal> -->
-        <Module-Frame titleName=" " titleImg="list.png" type="normal">
-          <List-Item iconName="device" type="imgItem" bottomLine="false"  title="子设备列表" @click.native="getChildDev"></List-Item>
-          <List-Item iconName="greenDot" type="imgItem" bottomLine="false" arrow="false" title="ZB通道" :value="deviceProps.ZB_Channel"></List-Item>
-        </Module-Frame>
+        <div class="deviceImage">
+          <img src="../assets/images/deviceImage/SensorBox_a1x0x2R6mpJ.png" alt="">
+        </div>
+        <div class="deviceInfo">
+          <div class="deviceInfo_item"><div class="rightLine"></div><div class="value">{{dev_props.temperature}}℃</div><div class="name">当前温度</div></div>
+          <div class="deviceInfo_item"><div class="rightLine"></div><div class="value">{{dev_props.humidity}}%</div><div class="name">当前湿度</div></div>
+          <div class="deviceInfo_item"><div class="value">{{dev_props.electic}}%</div><div class="name">电池电量</div></div>
+        </div>
       </div>
       <div class="offline" v-else>
         <Off-Line></Off-Line>
@@ -55,6 +55,9 @@ export default {
       dev_props:{
         online:true,
         powerstate:0,
+        temperature:'--',
+        humidity:'--',
+        electic:'--'
       },
       compontent_props:{
         headerBar:{
@@ -95,6 +98,12 @@ export default {
         HonYar.show_toast(err)
       })
     },
+    updateProps(deviceProps){
+      let _this = this;
+      _this.$set(_this.dev_props,'temperature',String(deviceProps.CurrentTemperature))
+      _this.$set(_this.dev_props,'humidity',String(deviceProps.CurrentHumidity))
+      _this.$set(_this.dev_props,'electic',String(deviceProps.BatteryPercentage))
+    },
     header_event(){
       this.$router.replace({ path: "/more" });
     },
@@ -117,7 +126,6 @@ export default {
     },
     container_touchmove(e) {
       e = event || window.event;
-      
       if (this.$refs.container.scrollTop == 0) {
         this.startRefresh_flag = true;
       } else {
@@ -167,7 +175,7 @@ export default {
               let obj = new Object();
               obj[key] = res.data.items[key].value
               _this.$store.dispatch("changeProp",obj).then(res => {
-                 _this.$set(_this.dev_props,"powerstate",_this.deviceProps.powerstate)
+                _this.updateProps(_this.deviceProps)
               })
             }
             //_this.$store.dispatch("changeProp",res.items)
@@ -194,7 +202,7 @@ export default {
     },1)
     let wait_data_prop = setInterval(()=>{
       if(JSON.stringify(_this.deviceProps) !== '{}'){
-        _this.$set(_this.dev_props,"powerstate",_this.deviceProps.powerstate)
+        _this.updateProps(_this.deviceProps)
         clearInterval(wait_data_prop)
       }
     },1)
@@ -222,6 +230,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+//comment css
 .main {
   width: 100%;
   height: 100%;
@@ -237,5 +246,77 @@ export default {
   width: 100%;
   height: 100%;
   //top: 80px;
+}
+//=========================================================== */
+//private css
+.deviceImage{
+  position: relative;
+  width: 100%;
+  height: 620px;
+  img{
+    position: absolute;
+    width: 466px;
+    height: 460px;
+    left: calc(50% - 233px);
+    top: 77px;
+  }
+}
+$deviceInfoWidth:690px;
+.deviceInfo{
+  position: relative;
+  width: $deviceInfoWidth;
+  height: 230px;
+  left: calc(50% - 345px);
+  background: #FFFFFF;
+  box-shadow: 0px 8px 30px 0px rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+  &_item{
+    position: absolute;
+    width: $deviceInfoWidth/3;
+    height: 100%;
+  }
+  &_item:nth-child(1){
+    left: 0px;
+  }
+  &_item:nth-child(2){
+    left: $deviceInfoWidth/3;
+  }
+  &_item:nth-child(3){
+    left: $deviceInfoWidth/3*2;
+  }
+  .rightLine{
+    position: absolute;
+    right: 0px;
+    top: calc(50% - 95px);
+    width: 1px;
+    height: 190px;
+    background-color: rgba(221, 221, 221, 1);
+  }
+  .value{
+    position: absolute;
+    top: 71px;
+    width: 100%;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    color: rgba(51, 51, 51, 1);
+    font-size: 34px;
+    font-family: PingFang SC;
+    font-weight: 500;
+  }
+  .name{
+    position: absolute;
+    top: 131px;
+    width: 100%;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    color: rgba(153, 153, 153, 1);
+    font-size: 30px;
+    font-family: PingFang SC;
+    font-weight: 500;
+    color: #999999;
+  }
 }
 </style>

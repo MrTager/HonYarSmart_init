@@ -1,7 +1,7 @@
 {
-  "name": "Gatway_III_tuya",
+  "name": "temperature-and-humidity-sensor",
   "version": "1.0.0",
-  "description": "Gatway_III_tuya H5 control panel of smart home",
+  "description": "temperature and humidity sensor H5 control panel of smart home",
   "author": "mrtager",
   "private": false,
   "scripts": {
