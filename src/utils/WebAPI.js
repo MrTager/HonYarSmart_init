@@ -2,23 +2,57 @@
  * 接口
  */
 import store from '../store'
-import SmartPadSDK from './SmartPadSDK'
+import HonYarSmartSDK from './HonYarSmartSDK'
 import Bridge from '../config/JSbridge.js'
 
 
-const HonYar = {
-    /**获取用户信息 */
-    getUserId(func) {
+const WebAPI = {
+    /**
+     * 提交意见
+     * @param {*} tel 用户联系方式
+     * @param {*} message 用户反馈内容
+     * @param {*} userId 用户的userId
+     */
+    submit_feedback(tel,message,userId,func){
         let request = {
-            'platform': '1',
-            'api': 'appUser/getAppUser',
-            'Content-Type': 'application/json',
-            'needAuth': 'true'
+            "platform": "1",
+            "url": "",
+            "api": "/help/feedback",
+            "Content-Type": "multipart/form-data",
+            "needAuth": "true"
         }
         let params = {
-
+            "contacts": tel,
+            "content": message,
+            "userId": userId
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
+            if (JSON.parse(res).code === 200) {
+                if (func !== undefined) {
+                    func(res)
+                } else {
+                    // console.log("func_undefined")
+                }
+            } else {
+                //提示
+                console.warn(res)
+            }
+        })
+    },
+    /**获取用户信息*/
+    getUserInfo(UserId,func,platform,apiVersion) {
+        let request = {
+            "platform": platform === undefined ? "1" : platform,
+            "apiVersion": apiVersion === undefined ? "1.0" : apiVersion,
+            "url": "",
+            "api": "/appUser/getAppUser",
+            "Content-Type": "application/json",
+            "needAuth": "true"
+        }
+        let param = {
+            "userId": UserId
+        }
+        HonYarSmartSDK.getServerData(request, param, (res) => {
             if (JSON.parse(res).code === 200) {
                 if (func !== undefined) {
                     func(res)
@@ -28,7 +62,28 @@ const HonYar = {
             } else {
                 //弹错
                 console.error(res)
-                this.show_toast(res)
+            }
+        })
+    },
+    getServer(api, params, func, platform,apiVersion) {
+        let request = {
+            "platform": platform === undefined ? "1" : platform,
+            "apiVersion": apiVersion === undefined ? "1.0" : apiVersion,
+            "url": "",
+            "api": api,
+            "Content-Type": "application/json",
+            "needAuth": "true"
+        }
+        HonYarSmartSDK.getServerData(request, params, (res) => {
+            if (JSON.parse(res).code === 200) {
+                if (func !== undefined) {
+                    func(res)
+                } else {
+                    // console.log("func_undefined")
+                }
+            } else {
+                //弹错
+                console.error(res)
             }
         })
     },
@@ -43,7 +98,7 @@ const HonYar = {
         let params = {
             'userId': userId
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code === 200) {
                 if (func !== undefined) {
                     func(res)
@@ -67,7 +122,7 @@ const HonYar = {
         let params = {
             'groupId': groupId
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code === 200) {
                 if (func !== undefined) {
                     func(res)
@@ -81,10 +136,10 @@ const HonYar = {
         })
     },
     /**获取用户绑定的设备列表 */
-    getListBindingByAccount(userId, pageNo, pageSize, appKey, func) {
+    getListBindingByAccount(userId, pageNo, pageSize, func) {
         let request = {
             'platform': '1',
-            'api': 'appUser/listBindingByAccount',
+            'api': '/appUser/listBindingByAccount',
             'Content-Type': 'application/json',
             'needAuth': 'true'
         }
@@ -92,9 +147,66 @@ const HonYar = {
             'userId': userId,
             'pageNo': pageNo,
             'pageSize': pageSize,
-            'appKey': appKey,
+        //    'appKey': appKey,
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
+            if (JSON.parse(res).code === 200) {
+                if (func !== undefined) {
+                    func(res)
+                } else {
+                    // console.log("func_undefined")
+                }
+            } else {
+                //弹错
+                console.error(res)
+            }
+        })
+    },
+    /**
+     * 获取当前设备下的子设备
+     * @param {*} userId 用户userId
+     * @param {*} iotId 设备IotId
+     * @param {*} parentProductKey 当前设备的parentProductKey
+     * @param {*} platform 平台代码
+     */
+    getListSubDevice(userId,iotId,parentProductKey,platform){
+        let request = {
+            'platform': platform === undefined ? "1" : platform,
+            'api': '/appUser/listSubDevices',
+            'Content-Type': 'application/json',
+            'needAuth': 'true'
+        }
+        let params = {
+            "userId": userId,
+            "pageNo": 1,
+            "pageSize": 1000,
+            "parentIotId": iotId,
+            "parentProductKey": parentProductKey
+        }
+        return new Promise((resolve,reject)=>{
+            HonYarSmartSDK.getServerData(request, params, (res) => {
+                if(JSON.parse(res).code === 200){
+                    resolve(res)
+                }else{
+                    reject(res)
+                }
+            })
+        })
+    },
+    /**根据设备获取用户绑定关系 */
+    getlistBindingByDev(iotId,func){
+        let request = {
+            'platform': '1',
+            'api': '/appUser/listBindingByDev',
+            'Content-Type': 'application/json',
+            'needAuth': 'true'
+        }
+        let params = {
+            "iotId":iotId,
+            "pageNo":0,
+            "pageSize":1000
+        }
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code === 200) {
                 if (func !== undefined) {
                     func(res)
@@ -121,7 +233,7 @@ const HonYar = {
             "pageSize": 1000,
             "sceneId": ''
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code === 200) {
                 if (func !== undefined) {
                     func(res)
@@ -134,22 +246,26 @@ const HonYar = {
             }
         })
     },
-    /**获取家信息 */
-    getHomeInfo(func) {
+    /**
+     * 
+     * @param {*} api 服务端路径
+     * @param {*} params 参数
+     * @param {*} func 回调
+     * @param {*} platform 平台代码
+     * @param {*} apiVersion api版本
+     */
+    getHomeInfo(api,params,func,platform,apiVersion) {
         let request = {
-            'platform': '1',
-            'api': 'appHome/getHomeInfo',
-            'Content-Type': 'application/json',
-            'needAuth': 'true'
+            "platform": platform === undefined ? "1" : platform,
+            "apiVersion": apiVersion === undefined ? "1.0" : apiVersion,
+            "url": "",
+            "api": api,
+            "Content-Type": "application/json",
+            "needAuth": "true"
         }
-        let params = {
-        }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        let param = params
+        HonYarSmartSDK.getServerData(request, param, (res) => {
             if (JSON.parse(res).code === 200) {
-                let _homeInfo = JSON.parse(res).data
-                store.dispatch('changeDate', {
-                    homeInfo: _homeInfo,
-                });
                 if (func !== undefined) {
                     func(res)
                 } else {
@@ -173,7 +289,7 @@ const HonYar = {
             "pageNo": 1,
             "pageSize": 1000,
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -197,7 +313,7 @@ const HonYar = {
         let params = {
             "sceneId": sceneId
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
@@ -217,7 +333,7 @@ const HonYar = {
             "pageNo": 1,
             "pageSize": 10000,
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -246,7 +362,7 @@ const HonYar = {
                 "pageSize": 10000,
             }
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             // console.log('消息',res)
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
@@ -272,7 +388,7 @@ const HonYar = {
             "pageNo": 1,
             "pageSize": 10000,
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -285,58 +401,83 @@ const HonYar = {
             }
         })
     },
-    /**设置设备属性*/
-    setDeviceProperties(iotId, items, func) {
-        let timeOut = false
-        let request = {
-            'platform': '1',
-            'api': 'appDevice/setDeviceProperties',
-            'Content-Type': 'application/json',
-            'needAuth': 'true'
-        }
+    /**获取设备信息 */
+    getDeviceInfo( userId,platform,iotId,func){
         let params = {
             "request": {
-                "platform": '1'
-            },
-            "params": {
-                "iotId": iotId,
-                "items": items
-            }
-        }
-        SmartPadSDK.getServerData(request, params, (res) => {
-            timeOut = true
-            if (func !== undefined) {
-                func(res)
-            } else {
-                // console.log("func_undefined")
-            }
-
-        })
-        /**三十秒超时处理 */
-        setTimeout(()=>{
-            if(timeOut == false){
-                this.show_toast("设置超时，请重试")
-            }
-        },30000)
-
-    },
-    /** 获取设备属性 */
-    getDeviceProperties(iotId, func) {
-        let request = {
-            'platform': '1',
-            'api': 'appDevice/getDeviceProperties',
-            'Content-Type': 'application/json',
-            'needAuth': 'true'
-        }
-        let params = {
-            "request": {
-                "platform": "1"
+                "userId": userId,
+                "platform": platform
             },
             "params": {
                 "iotId": iotId
             }
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getDeviceInfo( params, (res) => {
+            if (func !== undefined) {
+                func(res)
+            } else {
+                // console.log("func_undefined")
+            }
+        })
+    },
+/**
+ * 设置设备属性
+ * @param {*} iotId 
+ * @param {*} items 
+ * @param {*} platform 
+ * @param {*} apiVersion 
+ */
+    setDeviceProperties(iotId, items,platform,apiVersion) {
+        return new Promise((resolve, reject) => {
+            let timeOut = false
+            if(iotId.length > 0 ){
+            }else{
+                reject("服务端数据获取中,请稍后再试")
+            }
+            let request = {
+                'platform': platform === undefined ? "1" : platform,
+                "apiVersion": apiVersion === undefined ? "1.0" : apiVersion,
+                "url": "",
+                'api': '/appDevice/setDeviceProperties',
+                'Content-Type': 'application/json',
+                'needAuth': 'true'
+            }
+            let params = {
+                "request": {
+                    "platform": '1'
+                },
+                "params": {
+                    "iotId": iotId,
+                    "items": items
+                }
+            }
+            HonYarSmartSDK.getServerData(request, params, (res) => {
+                timeOut = true
+                if(JSON.parse(res).code === 200){
+                    resolve(res)
+                }else{
+                    reject(res)
+                }
+                
+            })
+            /**10s of timeout */
+            setTimeout(()=>{
+                if(timeOut == false){
+                    reject("请求返回超时")
+                }
+            },10000)
+        })
+    },
+    /** 请求阿里服务 */
+    getAliServerData(path,params,func){
+        let requestMessage = {
+            "request": {
+                "path": path,
+                "needAuth": "true"
+            },
+            "params": params
+        };
+        HonYarSmartSDK.getAliServerData( requestMessage, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -347,6 +488,46 @@ const HonYar = {
                 console.error(res)
             }
         })
+    },
+    /** 获取设备属性 */
+    getDeviceProperties(platform,iotId, func) {
+        // let request = {
+        //     'platform': '1',
+        //     'api': 'appDevice/getDeviceProperties',
+        //     'Content-Type': 'application/json',
+        //     'needAuth': 'true'
+        // }
+        // let params = {
+        //     "request": {
+        //         "platform": "1"
+        //     },
+        //     "params": {
+        //         "iotId": iotId
+        //     }
+        // }
+        // HonYarSmartSDK.getServerData(request, params, (res) => {
+        //     if (JSON.parse(res).code == 200) {
+        //         if (func !== undefined) {
+        //             func(res)
+        //         } else {
+        //             // console.log("func_undefined")
+        //         }
+        //     } else {
+        //         console.error(res)
+        //     }
+        // })
+        this.getServer("/appDevice/getDeviceProperties",{
+            "request": {
+                "platform": platform
+            },
+            "params": {
+                "iotId": iotId
+            }
+            },  (res) => {
+                if (func !== undefined) {
+                    func(res)
+                }
+            })
     },
     /** 获取短时天气属性 */
     getShortWeather(lng, lat, func) {
@@ -360,7 +541,7 @@ const HonYar = {
             "lng": lng,
             "lat": lat
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             console.log("短时天气",res)
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
@@ -385,7 +566,7 @@ const HonYar = {
             "lng": lng,
             "lat": lat
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -414,7 +595,7 @@ const HonYar = {
             "lng": lng,
             "lat": lat
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -444,7 +625,7 @@ const HonYar = {
             "lng": lng,
             "lat": lat
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -468,7 +649,7 @@ const HonYar = {
             "lng": lng,
             "lat": lat
         }
-        SmartPadSDK.getServerData(request, params, (res) => {
+        HonYarSmartSDK.getServerData(request, params, (res) => {
             if (JSON.parse(res).code == 200) {
                 if (func !== undefined) {
                     func(res)
@@ -491,11 +672,11 @@ const HonYar = {
         let params = {
 
         }
-        SmartPadSDK.listSupportServer(request, params, (res) => {
+        HonYarSmartSDK.listSupportServer(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -510,11 +691,11 @@ const HonYar = {
         let params = {
 
         }
-        SmartPadSDK.getNativePage(request, params, (res) => {
+        HonYarSmartSDK.getNativePage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -528,11 +709,11 @@ const HonYar = {
         }
         let params = {
         }
-        SmartPadSDK.getNativePage(request, params, (res) => {
+        HonYarSmartSDK.getNativePage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -546,11 +727,11 @@ const HonYar = {
         }
         let params = {
         }
-        SmartPadSDK.getNativePage(request, params, (res) => {
+        HonYarSmartSDK.getNativePage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -560,11 +741,11 @@ const HonYar = {
         }
         let params = {
         }
-        SmartPadSDK.getNativePage(request, params, (res) => {
+        HonYarSmartSDK.getNativePage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -579,11 +760,11 @@ const HonYar = {
         let params = {
 
         }
-        SmartPadSDK.getLocationInfo(request, params, (res) => {
+        HonYarSmartSDK.getLocationInfo(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -601,11 +782,11 @@ const HonYar = {
         let params = {
             "key": key
         }
-        SmartPadSDK.nativeStorage(request, params, (res) => {
+        HonYarSmartSDK.nativeStorage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -623,11 +804,11 @@ const HonYar = {
         let params = {
             "key": key
         }
-        SmartPadSDK.nativeStorage(request, params, (res) => {
+        HonYarSmartSDK.nativeStorage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -647,11 +828,11 @@ const HonYar = {
             "key": key,
             "value": value
         }
-        SmartPadSDK.nativeStorage(request, params, (res) => {
+        HonYarSmartSDK.nativeStorage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -671,11 +852,11 @@ const HonYar = {
             "key": key,
             "value": value
         }
-        SmartPadSDK.nativeStorage(request, params, (res) => {
+        HonYarSmartSDK.nativeStorage(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -693,36 +874,41 @@ const HonYar = {
         let params = {
 
         }
-        SmartPadSDK.getInternetData(request, params, (res) => {
+        HonYarSmartSDK.getInternetData(request, params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
     /**
-     * 
-     * @param {*} title 弹窗标题
-     * @param {*} messageType 	“warn”,”success”,”error”三种类型对应三种样式弹窗
-     * @param {*} message 弹窗信息内容
-     * @param {*} cancelButtonName 取消按钮名称
-     * @param {*} confirmButtonName 	确认按钮名称
-     * @param {*} func 回调
-     */
-    show_alert(title, messageType, message, cancelButtonName, confirmButtonName, func) {
-        let params = {
+    * 
+    * @param {*} cancel 取消
+    * @param {*} title 标题
+    * @param {*} message 内容
+    * @param {*} cancelButtonName 取消按键名
+    * @param {*} confirmButtonName 确认按键名
+    * @param {*} func 回调函数
+    */
+    show_alert(cancel, title,messageType, message,cancelButtonName,confirmButtonName, func) {
+        var params = {
             "title": title,
             "messageType": messageType,
             "message": message,
-            "cancelButtonName": cancelButtonName,
             "confirmButtonName": confirmButtonName
+        };
+        if (cancel) {
+            params.mainKey = ["title", "messageType", "message", "cancelButtonName", "confirmButtonName"];
+            params.cancelButtonName = cancelButtonName;
+        } else {
+            params.mainKey = ["title", "messageType", "message", "confirmButtonName"];
         }
-        SmartPadSDK.showDialog(params, (res) => {
+        HonYarSmartSDK.showDialog(params, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                // console.log("func_undefined")
+                console.warn("func_undefined")
             }
         })
     },
@@ -733,7 +919,71 @@ const HonYar = {
      * 
      */
     show_toast(message, func) {
-        SmartPadSDK.showToast({ "message": message }, (res) => {
+        HonYarSmartSDK.showToast({ "message": message }, (res) => {
+            if (func !== undefined) {
+                func(res)
+            } else {
+                console.warn("func_undefined"); 
+            }
+        })
+    },
+    /**
+     * 加载框
+     * @param {*} message 加载提示
+     * @param {*} func 回调函数
+     */
+    show_Loading(message, func) {
+        HonYarSmartSDK.showLoading({
+            "message": message
+        }, (res) => {
+            if (func !== undefined) {
+                func(res)
+            } else {
+                console.warn("func_undefined");
+            }
+        })
+    },
+    /**
+     * 停止加载框
+     * @param {*} func 
+     */
+    stop_Loading(func){
+        HonYarSmartSDK.showLoading({},(res) => {
+            if (func !== undefined) {
+                func(res)
+            } else {
+                console.warn("func_undefined");
+            }
+        })
+    },
+    /**
+     * 关闭APP当前页面
+     */
+    finishActivity(){
+        HonYarSmartSDK.finishActivity({},(res) => {
+            return new Promise((resolve,reject)=>{
+                resolve(res)
+            })
+        })
+    },
+    /**
+     * 
+     * @param {*} title 弹窗标题
+     * @param {*} message 弹窗信息内容
+     * @param {*} inputHint 输入提醒
+     * @param {*} cancelButtonName 取消按钮名称
+     * @param {*} confirmButtonName 确认按钮名称
+     * @param {*} func 回调函数
+     */
+    showInputDialog(title,message,inputHint,func){
+        let params = {
+            "title": title,
+            "message": message,
+            "inputHint": inputHint,
+            "cancelButtonName": "取消",
+            "confirmButtonName": "确认"
+        }
+        HonYarSmartSDK.showInputDialog(params,(res) => {
             if (func !== undefined) {
                 func(res)
             } else {
@@ -746,11 +996,11 @@ const HonYar = {
      * @param {*} func 
      */
     hide_header(func) {
-        SmartPadSDK.showToast({ "signalType": "titleBar"},{"needShow":false}, (res) => {
+        HonYarSmartSDK.nativeSignal({ "signalType": "titleBar"},{"needShow":false}, (res) => {
             if (func !== undefined) {
                 func(res)
             } else {
-                console.error(); ("func_undefined")
+                console.error("func_undefined"); 
             }
         })
     },
@@ -846,4 +1096,4 @@ const HonYar = {
 
 }
 
-export default HonYar
+export default WebAPI

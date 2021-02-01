@@ -1,43 +1,34 @@
 export default {
     state:{
         attribute:{
-            scene_data:{},//场景信息
+            now_use_App:"",
+            appKey:"24897122",//正式版：24897122 测试版:24896341
+            apppassword:"2489693724897122",//正式版：2489693724897122 测试版:2489674024896341
             user_info:{},//用户信息
             homeInfo:{},//家信息
-            user_all_dev:{},//用户下所有的设备
-            user_dev_group:{},//用户下的设备分组
-            now_group_dev:[],//当前常用组下的设备列表
-            suballData: {},//主动上报的数据
-            nativeSignalData: {},//app nativeSignalData
-            scene_Log:[],//场景日志
-            message_Log:[],//消息日志
-            dev_Log:[],//设备日志
-            theme_img:"",
-            short_weather:{},//短时天气
-        },
-         /**需要分按钮的属性 */
-         switch_config:{
-            "PowerBtn":["PowerSwitch","PowerSwitch_1","PowerSwitch_2","PowerSwitch_3","PowerSwitch_4","SocketSwitch_1","SocketSwitch_2","SocketSwitch_3","SocketSwitch_4","LightSwitch"],
-            "Temperature":["CurrentTemperature","TargetTemperature"]
+            deviceInfo:{},//设备信息
+            bindingDevList:{},//绑定的设备列表
+            devBindingUserList:{},//此设备的用户绑定关系列表
+            deviceProps:{},//设备的全部子属性
         },
         /**需要隐藏的设备按品类分 */
         device_config:{
-            "delCategoryKey":['SensorSignalCollector','DoorContact','GasDetector','WaterDetector','Siren','AlarmSwitch','SmokeAlarm','IRDetector','GeneralGateway','BackgroundMusicController']
+            "delCategoryKey":['aaaaaa']
         },
         /**需要隐藏的设备按pk分 */
         device_pk_kill:{
-            "devicePK":['hy4n6bKG3gz','a1PBERiUwmX']
+            "devicePK":['aaaaaa']
         }
-        
     },//数据容器
-
     mutations: {
-        updateDate(state,payload){
+        UPDATEDATA(state,payload){
             const { data } = payload;
             const { attribute = {} } = data;
-            state.attribute = Object.assign({},state.attribute,attribute)
+            state.attribute = Object.assign({},state.attribute,attribute);
         },
-      
+        UPDATEPROP(state,payload){
+            state.attribute.deviceProps = Object.assign({},state.attribute.deviceProps,payload);
+        },
         UPDATE_SUBALLEVENT(state, data) {
             state.attribute.suballData = data
           },
@@ -47,9 +38,15 @@ export default {
     },
     actions : {
         changeDate({commit},value){
-            commit('updateDate',{ data: {
+            commit('UPDATEDATA',{ data: {
                 attribute: value
             }})
+        },
+        changeProp({commit},value){
+            return new Promise((resolve,reject)=>{
+                commit('UPDATEPROP',value)
+                resolve()
+            })
         },
         updateEvent({commit}, data) {
             commit('UPDATE_SUBALLEVENT', data)

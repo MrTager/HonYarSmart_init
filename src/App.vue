@@ -1,19 +1,37 @@
 <template>
-  <div id="app">
-    <!-- <keep-alive :include="includePages"> -->
-    <router-view/>
-    <!-- </keep-alive> -->
-  </div>
+  <transition :name="direction" >
+    <div id="app">
+      <!-- <keep-alive :include="includePages"> -->
+      <router-view/>
+      <!-- </keep-alive> -->
+    </div>
+  </transition>
 </template>
 
 <script>
-import Tool from '@/utils/HonYar'
+import { mapState } from "vuex";
+import HonYar from '@/utils/WebAPI'
 import axios from 'axios'
 export default {
   name: 'App',
   data(){
     return {
-      includePages:['main','news','Weather']
+      direction: "slide-right",
+      includePages:['main','news','Weather'],
+      loading_data_flag:false,
+    }
+  },
+  watch: {
+    $route(to, from) {
+      const toDepth = to.path.split("/").length;
+      const fromDepth = from.path.split("/").length;
+      if (to.path == "/") {
+        this.direction = "slide-right";
+      } else if (from.path == "/") {
+        this.direction = "slide-left";
+      }else{
+        this.direction = toDepth < fromDepth ? "slide-right" : "slide-left";
+      }
     }
   },
   components: {
@@ -22,29 +40,188 @@ export default {
   mounted() {
     let _this = this;
   },
+  computed: {
+    ...mapState({
+      state: (state) => {
+        return state;
+      },
+    }),
+
+   },
   methods: {
+    save_appkey(appKey){
+      let _this = this;
+      let now_use_App = "";
+      switch (appKey) {
+            case "22593195":
+                now_use_App = "蓝绿智家";
+                break;
+            case "23548028":
+                now_use_App = "智享人生";
+                break;
+            case "27784524":
+                now_use_App = "鸿雁智+";
+                break;
+            case "24518347":
+                now_use_App = "启博";
+                break;
+            case "25508337":
+                now_use_App = "智慧用电";
+                break;
+            case "21224927":
+                now_use_App = "能效管理";
+                break;
+            case "21856927":
+                now_use_App = "测试";
+                break;
+            case "28567632":
+                now_use_App = "浙电华云";
+                break;
+            case "28611437":
+                now_use_App = "普天信息";
+                break;
+            case "28980883":
+                now_use_App = "鸿雁产测";
+                break;
+            case "24517723":
+                now_use_App = "名特网络";
+                break;
+        }
+        _this.$store.dispatch("changeDate", {
+          now_use_App : now_use_App
+        });
+    },
     registerJs () {
       this.$bridge.registerHandler('nativeSignal', (data, responseCallback) => {
-        this.$store.dispatch('updateNativeSignal', data)
+        //this.$store.dispatch('updateNativeSignal', data)
+        //console.log('回复数据1',data)
+        _this.deal_reported_data("nativeSignal",data)
         responseCallback('{"errCode": 0}') // 回复给Native,data为回复数据
-    })
-    //   this.$bridge.registerHandler('subAllEvent', (data, responseCallback) => {
-    //     this.$store.dispatch('updateEvent', data)
-    //     console.log('回复数据2',data)
-    //     responseCallback('{"errCode": 0}') // 回复给Native,data为回复数据
-    //   })
+      })
+      this.$bridge.registerHandler('subAllEvent', (data, responseCallback) => {
+        //this.$store.dispatch('updateEvent', data)
+        //console.log('回复数据2',data)
+        _this.deal_reported_data("subAllEvent",data)
+        responseCallback('{"errCode": 0}') // 回复给Native,data为回复数据
+      })
    },
+   start(){
+    let _this = this;
+    _this.registerJs();
+    //HonYar.hide_header((res)=>{})
+    
+    //加载超时处理
+    // let loadingTime = setTimeout(()=>{
+    //   if(this.loading_data_flag){
+    //     HonYar.show_toast("数据请求超时",()=>{})
+    //     clearTimeout(loadingTime)
+    //   }
+    // },5000)
+    //开始加载数据
+    //获取设备属性
+    HonYar.getDeviceInfo('','1','',(res)=>{
+      if(JSON.parse(res).code == 200){
+        let data = JSON.parse(res).data
+        //console.log("设备信息",data)
+        //data传入store里
+        _this.$store.dispatch("changeDate", {
+          deviceInfo : data
+        });
+        //获取用户信息
+        HonYar.getUserInfo(data.userId,(res)=>{
+          if(JSON.parse(res).code == 200){
+            _this.$store.dispatch("changeDate", {
+              user_info : JSON.parse(res).data
+            });
+            _this.save_appkey(JSON.parse(res).data.appKey)
+          }else{
+            HonYar.show_toast("获取用户信息失败"+res,(res)=>{})
+          }
+        })
+        /**获取用户绑定列表 */
+        HonYar.getListBindingByAccount(data.userId, 1, 1000, (res)=>{
+          if(JSON.parse(res).code == 200){
+            _this.$store.dispatch("changeDate", {
+              bindingDevList : JSON.parse(res).data
+            });
+          }else{
+            HonYar.show_toast("获取用户的绑定列表失败"+res,(res)=>{})
+          }
+        })
+        /**获取此设备的绑定关系 */
+        HonYar.getlistBindingByDev(data.iotId,(res)=>{
+          if(JSON.parse(res).code == 200){
+            _this.$store.dispatch("changeDate", {
+              devBindingUserList : JSON.parse(res).data
+            });
+          }else{
+            HonYar.show_toast("获取此设备的用户绑定关系失败"+res,(res)=>{})
+          }
+        })
+        /**获取设备属性 */
+        HonYar.getDeviceProperties('1',data.iotId,(res)=>{
+          //console.log("设备子属性",res)
+          if(JSON.parse(res).code === 200){
+            let props = JSON.parse(res).data;
+            for(let a = 0;a<props.length;a++){
+              let obj = {};
+              obj[props[a].attribute] = props[a].value
+              _this.$store.dispatch("changeProp",obj)
+            }
+          }else{
+            HonYar.show_toast("获取设备属性失败"+res,(res)=>{})
+          }
+        })
+      }else{
+        HonYar.show_toast("获取设备信息失败"+res,(res)=>{})
+      }
+    })
+    //获取家信息
+     HonYar.getHomeInfo("/appHome/getHomeInfo","",(res)=>{
+      if(JSON.parse(res).code == 200){
+        let _homeInfo = JSON.parse(res).data
+        _this.$store.dispatch('changeDate', {
+            homeInfo: _homeInfo,
+        });
+      }else{
+        HonYar.show_toast("获取家信息失败"+res,(resp)=>{})
+      }
+     },'1',"1.0")
+   },
+   deal_reported_data(type,data){
+     if(type === "subAllEvent"){
+       
+     }else if (type === "nativeSignal"){
+
+     }
+   }
    
   },
   created(){
-    //获取家信息
-    Tool.getHomeInfo();
-    // alert(window.screen.height )
-    // alert(window.screen.width )
+    this.start()
+
   }
 }
 </script>
-
+<style>
+.appView {
+  position: absolute;
+  width:100%;
+  transition: transform 0.3s ease-out;
+}
+.slide-left-enter{
+  transform: translate(100%, 0);
+}
+.slide-left-leave-active{
+  transform: translate(-50%, 0);
+}
+.slide-right-enter {
+  transform: translate(-50%, 0);
+}
+.slide-right-leave-active{
+  transform: translate(100%, 0);
+}
+</style>
 <style>
 html,body,#app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -54,6 +231,7 @@ html,body,#app {
   font-family:PingFang SC;
   width: 100%;
   height: 100%;
+  background-color: white;
 }
 
 

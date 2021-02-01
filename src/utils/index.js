@@ -1,5 +1,5 @@
-import SmartPadSDK from './SmartPadSDK'
+import HonYar from './WebAPI'
 
 export {
-  SmartPadSDK
+  HonYar
 }
