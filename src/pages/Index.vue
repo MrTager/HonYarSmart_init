@@ -4,16 +4,20 @@
       <!-- <Header-Bar @back="back" :titleName="deviceInfo.nickName == '' ? deviceInfo.appProductName : deviceInfo.nickName" type="more" icon="more" @event="header_event"></Header-Bar> -->
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
-          
         </DropDown-Refresh> -->
-        <div class="deviceImage">
-          <img src="../assets/images/deviceImage/SensorBox_a1x0x2R6mpJ.png" alt="">
-        </div>
-        <div class="deviceInfo">
-          <div class="deviceInfo_item"><div class="rightLine"></div><div class="value">{{dev_props.temperature}}℃</div><div class="name">当前温度</div></div>
-          <div class="deviceInfo_item"><div class="rightLine"></div><div class="value">{{dev_props.humidity}}%</div><div class="name">当前湿度</div></div>
-          <div class="deviceInfo_item"><div class="value">{{dev_props.electic}}%</div><div class="name">电池电量</div></div>
-        </div>
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal">
+          <ul class="switchGroup">
+            <li>
+              <Round-Botton-Frame></Round-Botton-Frame>
+            </li>
+            <li>
+              <Round-Botton-Frame></Round-Botton-Frame>
+            </li>
+            <li>
+              <Round-Botton-Frame></Round-Botton-Frame>
+            </li>
+          </ul>
+        </Module-Frame>
       </div>
       <div class="offline" v-else>
         <Off-Line></Off-Line>
@@ -25,7 +29,7 @@
 import { mapState } from "vuex";
 import HonYar from "@/utils/WebAPI";
 import axios from "axios";
-import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge } from "@/component_library";
+import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame } from "@/component_library";
 
 /**
  * 
@@ -48,7 +52,9 @@ export default {
     "Gray-Dividing-Strip":GrayDividingStrip,
     "List-Modal":ListModal,
     "Animation-Frame":AnimationFrame,
-    "List-Item-Large":ListItemLarge
+    "List-Item-Large":ListItemLarge,
+    "Round-Switch":RoundSwitch,
+    "Round-Botton-Frame":RoundBottonFrame
   },
   data() {
     return {
@@ -249,74 +255,18 @@ export default {
 }
 //=========================================================== */
 //private css
-.deviceImage{
-  position: relative;
+.switchGroup{
   width: 100%;
-  height: 620px;
-  img{
-    position: absolute;
-    width: 466px;
-    height: 460px;
-    left: calc(50% - 233px);
-    top: 77px;
-  }
-}
-$deviceInfoWidth:690px;
-.deviceInfo{
-  position: relative;
-  width: $deviceInfoWidth;
-  height: 230px;
-  left: calc(50% - 345px);
-  background: #FFFFFF;
-  box-shadow: 0px 8px 30px 0px rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  overflow: hidden;
-  &_item{
-    position: absolute;
-    width: $deviceInfoWidth/3;
+  height: 300px;
+  background-color: aqua;
+  li{
+    width: 1/3*100%;
     height: 100%;
-  }
-  &_item:nth-child(1){
-    left: 0px;
-  }
-  &_item:nth-child(2){
-    left: $deviceInfoWidth/3;
-  }
-  &_item:nth-child(3){
-    left: $deviceInfoWidth/3*2;
-  }
-  .rightLine{
-    position: absolute;
-    right: 0px;
-    top: calc(50% - 95px);
-    width: 1px;
-    height: 190px;
-    background-color: rgba(221, 221, 221, 1);
-  }
-  .value{
-    position: absolute;
-    top: 71px;
-    width: 100%;
-    height: 38px;
-    line-height: 38px;
-    text-align: center;
-    color: rgba(51, 51, 51, 1);
-    font-size: 34px;
-    font-family: PingFang SC;
-    font-weight: 500;
-  }
-  .name{
-    position: absolute;
-    top: 131px;
-    width: 100%;
-    height: 32px;
-    line-height: 32px;
-    text-align: center;
-    color: rgba(153, 153, 153, 1);
-    font-size: 30px;
-    font-family: PingFang SC;
-    font-weight: 500;
-    color: #999999;
+    float: left;
+    background-color: blueviolet;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>
