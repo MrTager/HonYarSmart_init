@@ -3,6 +3,10 @@
         <div class="title">
             <img v-if="frameType === 'normal'" class="titleImage" :src="require(`../../assets/images/icon/module/${img}`)" alt="">
             <div class="titleName" :style="{left: frameType === 'normal' ? `${120*aspect_ratio}px` : (frameType === 'noIcon' ? `${60*aspect_ratio}px` : `${60*aspect_ratio}px`)}">{{name}}</div>
+            <div class="rightOption" v-if="rightOptionFlag" @click="rightOptionEvent">
+                <img src="../../assets/images/icon/module/edit_icon.png"/>
+                <span>编辑昵称</span>
+            </div>
         </div>
         <slot></slot>
     </div>
@@ -15,7 +19,8 @@ export default {
     props:[
         "titleName",
         "titleImg",
-        "type"
+        "type",
+        "rightOption"
     ],
     watch:{
         type:{
@@ -33,9 +38,13 @@ export default {
             img:this.titleImg,
             name:this.titleName,
             frameType:this.type, //normal noIcon
+            rightOptionFlag:this.rightOption !== undefined ? true : false
         }
     },
     methods:{
+        rightOptionEvent(){
+            this.$emit("rightOptionEvent")
+        }
     },
     mounted(){
         
@@ -56,15 +65,31 @@ export default {
 }
 .ModuleFrame{
     width: 100%;
-    min-height: 300px;
-
 }
 .title{
     position: relative;
     width: 100%;
     height: 50px;
-    margin-top: 40px;
+    //margin-top: 40px;
     margin-bottom: 20px;
+    .rightOption{
+        position: absolute;
+        width: 150px;
+        height: 30px;
+        right: 50px;
+        top: calc(50% - 15px);
+        img{
+            position: absolute;
+            width: 27px;
+            height: 27px;
+            left: 0;
+        }
+        span{
+            position: absolute;
+            right: 0;
+            @include oneLineTextStyle(118px,30px,28px,rgba(137, 137, 137, 1))
+        }
+    }
 }
 .titleImage{
     position: absolute;
@@ -82,4 +107,5 @@ export default {
     font-size: 30px;
     line-height: 40px;
 }
+
 </style>

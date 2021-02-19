@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="switch">
-        <Round-Switch type="child_lock"></Round-Switch>
+        <Round-Switch type="power" :state="enable" @event="changeSwitch(state)"></Round-Switch>
     </div>
     <span class="nickName">
         客厅吊灯
@@ -19,6 +19,32 @@ export default {
     name:'RoundBottonFrame',
     components:{
         "Round-Switch":RoundSwitch
+    },
+    props:[
+        "state"
+    ],
+    watch:{
+        state:{
+            handler(newVal,oldVal){
+                let _this = this;
+                if(newVal !== undefined){
+                    _this.$set(_this,'enable',newVal)
+                }
+            },
+            immediate:true,
+            deep:true
+        }
+    },
+    data(){
+        return {
+            enable:0
+        }
+    },
+    methods:{
+        changeSwitch(state){
+            const powerState = state
+            this.$emit("event",powerState)
+        }
     }
 
 }
@@ -28,7 +54,6 @@ export default {
     .container{
         width: 150px;
         height: 200px;
-        background-color: burlywood;
         position: relative;
         .switch{
             position: absolute;
@@ -40,7 +65,6 @@ export default {
         .nickName{
             position: absolute;
             top: 130px;
-            background-color: yellow;
             @include oneLineTextStyle(100%, 30px, 28px, rgba(0, 0, 0, 1))
         }
         .productName{

@@ -5,16 +5,43 @@
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
         </DropDown-Refresh> -->
-        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal">
+        <div class="topClear">{{deviceInfo}}</div>
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="changeNickname">
           <ul class="switchGroup">
             <li>
-              <Round-Botton-Frame></Round-Botton-Frame>
+              <Round-Botton-Frame :state="dev_props.powerstate_1" @event="changeSwitch(data)"></Round-Botton-Frame>
             </li>
             <li>
-              <Round-Botton-Frame></Round-Botton-Frame>
+              <Round-Botton-Frame :state="dev_props.powerstate_2" @event="changeSwitch(data)"></Round-Botton-Frame>
             </li>
             <li>
-              <Round-Botton-Frame></Round-Botton-Frame>
+              <Round-Botton-Frame :state="dev_props.powerstate_3" @event="changeSwitch(data)"></Round-Botton-Frame>
+            </li>
+          </ul>
+        </Module-Frame>
+        <Module-Frame titleName="指示灯" titleImg="title_switch.png" type="normal">
+          <ul class="ledSwitch">
+            <li>
+              <Round-Edges-Transverse-Rectangle title="关闭"></Round-Edges-Transverse-Rectangle>
+            </li>
+            <li>
+              <Round-Edges-Transverse-Rectangle title="状态指示"></Round-Edges-Transverse-Rectangle>
+            </li>
+            <li>
+              <Round-Edges-Transverse-Rectangle title="位置指示"></Round-Edges-Transverse-Rectangle>
+            </li>
+          </ul>
+        </Module-Frame>
+        <Module-Frame titleName="断电记忆" titleImg="title_switch.png" type="normal">
+          <ul class="ledSwitch">
+            <li>
+              <Round-Edges-Transverse-Rectangle title="启动全开"></Round-Edges-Transverse-Rectangle>
+            </li>
+            <li>
+              <Round-Edges-Transverse-Rectangle title="启动全关"></Round-Edges-Transverse-Rectangle>
+            </li>
+            <li>
+              <Round-Edges-Transverse-Rectangle title="断电记忆"></Round-Edges-Transverse-Rectangle>
             </li>
           </ul>
         </Module-Frame>
@@ -29,7 +56,7 @@
 import { mapState } from "vuex";
 import HonYar from "@/utils/WebAPI";
 import axios from "axios";
-import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame } from "@/component_library";
+import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle } from "@/component_library";
 
 /**
  * 
@@ -54,16 +81,18 @@ export default {
     "Animation-Frame":AnimationFrame,
     "List-Item-Large":ListItemLarge,
     "Round-Switch":RoundSwitch,
-    "Round-Botton-Frame":RoundBottonFrame
+    "Round-Botton-Frame":RoundBottonFrame,
+    "Round-Edges-Transverse-Rectangle":RoundEdgesTransverseRectangle
   },
   data() {
     return {
       dev_props:{
         online:true,
-        powerstate:0,
-        temperature:'--',
-        humidity:'--',
-        electic:'--'
+        powerstate_1:0,
+        powerstate_2:0,
+        powerstate_3:0,
+        indicator:0,
+        power_off_memory:0,
       },
       compontent_props:{
         headerBar:{
@@ -79,6 +108,7 @@ export default {
         return state;
       },
       deviceInfo: (state) => {
+        console.log("设备信息",state.pubilc.attribute.deviceInfo)
         return state.pubilc.attribute.deviceInfo;
       },
       deviceProps: (state) => {
@@ -88,27 +118,40 @@ export default {
 
    },
   methods: {
+    /*********************************porivate function****************************************************** */
+    //change nickname
+    changeNickname(){
+
+    },
+    changeSwitch(data){
+      let _this = this;
+      console.log(data)
+      // const iotId = _this.deviceInfo.iotId;
+      // let item = {
+      //   [propName]:state
+      // }
+      // HonYar.setDeviceProperties(iotId,item)
+      // .then(res => {
+      // })
+      // .catch(err => {
+      //   HonYar.show_toast(err)
+      // })
+    },
+    power_event(state){
+
+    },
+    /********************************commment function********************************************************** */
     back(){
       HonYar.finishActivity();
     },
-    power_event(state){
-      let _this = this;
-      const iotId = _this.deviceInfo.iotId;
-      let item = {
-        "powerstate":state
-      }
-      HonYar.setDeviceProperties(iotId,item)
-      .then(res => {
-      })
-      .catch(err => {
-        HonYar.show_toast(err)
-      })
-    },
     updateProps(deviceProps){
       let _this = this;
-      _this.$set(_this.dev_props,'temperature',String(deviceProps.CurrentTemperature))
-      _this.$set(_this.dev_props,'humidity',String(deviceProps.CurrentHumidity))
-      _this.$set(_this.dev_props,'electic',String(deviceProps.BatteryPercentage))
+      console.log("设备属性",deviceProps)
+      _this.$set(_this.dev_props,'powerstate_1',deviceProps.powerstate_1)
+      _this.$set(_this.dev_props,'powerstate_2',deviceProps.powerstate_2)
+      _this.$set(_this.dev_props,'powerstate_3',deviceProps.powerstate_3)
+      _this.$set(_this.dev_props,'powerstate_2',deviceProps.indicator)
+      _this.$set(_this.dev_props,'powerstate_3',deviceProps.power_off_memory)
     },
     header_event(){
       this.$router.replace({ path: "/more" });
@@ -119,6 +162,7 @@ export default {
     timing(){
       this.$router.replace({ path: "/timing" });
     },
+    /*******************************************************down loader refresh********************************* */
     action_Refresh(done) {
       done();
     },
@@ -141,7 +185,7 @@ export default {
     container_touchend(e){
 
     },
-    /**监听上报 */
+    /**********************************************************监听上报********************************************************** */
     monitor_report() {
       let _this = this;
       this.$bridge.registerHandler("nativeSignal", (data, responseCallback) => {
@@ -196,7 +240,7 @@ export default {
     //检查网络连接
     if (navigator.onLine) {
     }else{
-      HonYar.show_toast("无网络",(res)=>{})
+      HonYar.show_toast("无网络,请检查网络连接",(res)=>{})
     }
     this.monitor_report();
     let wait_data = setInterval(()=>{
@@ -255,15 +299,29 @@ export default {
 }
 //=========================================================== */
 //private css
+.topClear{
+  width: 100%;
+  height: 40px;
+}
 .switchGroup{
   width: 100%;
   height: 300px;
-  background-color: aqua;
   li{
     width: 1/3*100%;
     height: 100%;
     float: left;
-    background-color: blueviolet;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+.ledSwitch{
+  width: 100%;
+  height: 160px;
+  li{
+    width: 1/3*100%;
+    height: 100%;
+    float: left;
     display: flex;
     align-items: center;
     justify-content: center;

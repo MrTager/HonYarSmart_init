@@ -1,3 +1,5 @@
+@import "./clearDefaultStyle.scss";
+
 @mixin oneLineTextStyle($width,$height,$size,$color){
     display: block;
     margin: 0;
@@ -12,4 +14,34 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+};
+@mixin oneLineTextStyle_noColor($width,$height,$size){
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: $width;
+    height: $height;
+    font-size: $size;
+    line-height: $height;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+};
+$buttonActiveColor:rgba(211, 211, 211,0.5);
+@mixin switchBoxShadow(){
+    -moz-box-shadow:0px 0px 10px #c6c6c6;
+    -webkit-box-shadow:0px 0px 10px #c6c6c6;
+    box-shadow:0px 0px 10px #c6c6c6;
 }

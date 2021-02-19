@@ -1,6 +1,7 @@
 export { default as MainPowerSwitch} from "./button/MainPowerSwitch.vue"
 export { default as InsideLineDividingStrip} from "./dividingStrip/InsideLineDividingStrip.vue"
 export { default as RectangularSwitch} from "./button/RectangularSwitch.vue"
+export { default as RoundEdgesTransverseRectangle } from "./button/RoundEdgesTransverseRectangle.vue"
 export { default as RoundSwitch} from "./button/RoundSwitch.vue"
 export { default as ChickSwitch} from "./button/ChickSwitch.vue"
 export { default as BottomSwitch} from "./button/BottomSwitch.vue"
