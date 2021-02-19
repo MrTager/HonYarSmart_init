@@ -7,7 +7,7 @@
         客厅吊灯
     </span>
     <span class="productName">
-
+        开关一
     </span>
   </div>
 </template>
@@ -25,9 +25,6 @@ export default {
 </script>
 
 <style lang="scss">
-@mixin textStyle($width,$height,$size,$color){
-
-}
     .container{
         width: 150px;
         height: 200px;
@@ -41,18 +38,15 @@ export default {
             top: 10px;
         }
         .nickName{
-            display: block;
-            margin: 0;
-            padding: 0;
             position: absolute;
-            width: 100%;
-            height: 30px;
             top: 130px;
             background-color: yellow;
-            text-align: center;
+            @include oneLineTextStyle(100%, 30px, 28px, rgba(0, 0, 0, 1))
         }
         .productName{
-
+            position: absolute;
+            top: 170px;
+            @include oneLineTextStyle(100%, 25px, 22px, rgba(191, 191, 191, 1))
         }
     }
 </style>

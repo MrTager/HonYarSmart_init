@@ -1,0 +1,15 @@
+@mixin oneLineTextStyle($width,$height,$size,$color){
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: $width;
+    height: $height;
+    font-size: $size;
+    color: $color;
+    line-height: $height;
+    text-align: center;
+    vertical-align: middle;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
