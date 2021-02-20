@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <div class="switch">
-        <Round-Switch type="power" :state="enable" @event="changeSwitch(state)"></Round-Switch>
+        <Round-Switch type="power" :state="enable" @event="changeSwitch"></Round-Switch>
     </div>
     <span class="nickName">
-        客厅吊灯
+        {{switchName.nickName}}
     </span>
     <span class="productName">
-        开关一
+        {{switchName.propName}}
     </span>
   </div>
 </template>
@@ -21,7 +21,8 @@ export default {
         "Round-Switch":RoundSwitch
     },
     props:[
-        "state"
+        "state",
+        "propName"
     ],
     watch:{
         state:{
@@ -33,11 +34,22 @@ export default {
             },
             immediate:true,
             deep:true
+        },
+        propName:{
+            handler(newVal,oldVal){
+                let _this = this;
+                if(newVal !== undefined){
+                    _this.$set(_this,'switchName',newVal)
+                }
+            },
+            immediate:true,
+            deep:true
         }
     },
     data(){
         return {
-            enable:0
+            enable:0,
+            switchName:{}
         }
     },
     methods:{

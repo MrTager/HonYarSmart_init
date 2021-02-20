@@ -42,6 +42,7 @@ export default {
         changeStyle(state){
             let _this = this;
             state === 0 ? _this.$set(this,"enable",0) : _this.$set(this,"enable",1);
+            this.enable == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open);
              if(state === 0){
                  _this.$nextTick(()=>{
                      _this.$refs.roundSwitch.style.backgroundColor = "rgba(255, 255, 255, 1)"
@@ -54,7 +55,6 @@ export default {
         },
         change(){
             let _this = this
-            this.enable == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open);
             _this.enable === 0 ? _this.$set(this,"enable",1) : _this.$set(this,"enable",0);
             this.$emit("event",_this.enable)
            
@@ -92,6 +92,7 @@ export default {
     border-radius: 50px;
     overflow: hidden;
     @include switchBoxShadow();
+    transition: all 0.2s;
 }
 .RoundSwitch_icon{
     position: absolute;

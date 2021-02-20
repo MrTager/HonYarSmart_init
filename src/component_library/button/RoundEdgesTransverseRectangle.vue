@@ -1,5 +1,5 @@
 <template>
-    <div class="RoundEdgesTransverseRectangle" :class="{'open':state == 1,'close':state == 0}" @click="change()">
+    <div class="RoundEdgesTransverseRectangle" ref="roundEdgesTransverseRectangle" :class="{'open':state == 1,'close':state == 0}" @click="change()">
         <div class="changeColor" >
             <span >{{switch_title}}</span>
         </div>
@@ -15,20 +15,47 @@ export default {
     name:"RoundEdgesTransverseRectangle",
     props:[
         "type",
-        "title"
+        "title",
+        "state"
     ],
+    watch:{
+        state:{
+            handler(newVal,oldVal){
+                let _this = this
+                if(newVal !== undefined){
+                    this.$set(this,"enable",newVal)
+                    _this.changeStyle(newVal);
+                }
+            }
+        }
+    },
     data(){
         return {
             open:"",
             close:"",
-            state:0,
+            enable:0,
             switch_title:this.title,
 
         }
     },
     methods:{
+         changeStyle(state){
+            let _this = this;
+            state === 0 ? _this.$set(this,"enable",0) : _this.$set(this,"enable",1);
+             if(state === 0){
+                 _this.$nextTick(()=>{
+                     _this.$refs.roundEdgesTransverseRectangle.style.backgroundColor = "rgba(255, 255, 255, 1)"
+                 })
+            }else{
+                _this.$nextTick(()=>{
+                    _this.$refs.roundEdgesTransverseRectangle.style.backgroundColor = "rgba(0, 208, 186, 1)"
+                })
+            }
+        },
         change(){
-            this.state == 0 ? this.state = 1 : this.state = 0;
+            let _this = this
+            this.enable == 0 ? this.enable = 1 : this.enable = 0;
+            this.$emit("event",_this.enable)
         }
     },
     mounted(){

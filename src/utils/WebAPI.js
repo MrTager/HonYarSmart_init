@@ -84,6 +84,7 @@ const WebAPI = {
             } else {
                 //弹错
                 console.error(res)
+                this.show_toast(res)
             }
         })
     },
@@ -491,31 +492,6 @@ const WebAPI = {
     },
     /** 获取设备属性 */
     getDeviceProperties(platform,iotId, func) {
-        // let request = {
-        //     'platform': '1',
-        //     'api': 'appDevice/getDeviceProperties',
-        //     'Content-Type': 'application/json',
-        //     'needAuth': 'true'
-        // }
-        // let params = {
-        //     "request": {
-        //         "platform": "1"
-        //     },
-        //     "params": {
-        //         "iotId": iotId
-        //     }
-        // }
-        // HonYarSmartSDK.getServerData(request, params, (res) => {
-        //     if (JSON.parse(res).code == 200) {
-        //         if (func !== undefined) {
-        //             func(res)
-        //         } else {
-        //             // console.log("func_undefined")
-        //         }
-        //     } else {
-        //         console.error(res)
-        //     }
-        // })
         this.getServer("/appDevice/getDeviceProperties",{
             "request": {
                 "platform": platform
@@ -528,6 +504,20 @@ const WebAPI = {
                     func(res)
                 }
             })
+    },
+    /**
+     * 获取设备子属性
+     * @param {*} iotId 
+     */
+    getDeviceChildPrpps(iotId){
+        return new Promise((resole,reject)=>{
+            this.getServer("/appUserIot/getIotPropByiotId",{
+                "iotId": iotId
+            },  (res) => {
+                resole(res)
+            })
+        })
+        
     },
     /** 获取短时天气属性 */
     getShortWeather(lng, lat, func) {

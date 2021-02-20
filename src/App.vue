@@ -167,7 +167,15 @@ export default {
             for(let a = 0;a<props.length;a++){
               allObj[props[a].attribute] = props[a].value
             }
-            _this.$store.dispatch("changeProp",allObj)
+            _this.$store.dispatch("changeProp",allObj).then(()=>{
+              HonYar.getDeviceChildPrpps(data.iotId)
+              .then((res)=>{
+                _this.$store.dispatch("changeDate",{
+                  deviceChildProps:JSON.parse(res).data
+                }).then(res => {
+                })
+              })
+            })
           }else{
             HonYar.show_toast("获取设备属性失败"+res,(res)=>{})
           }

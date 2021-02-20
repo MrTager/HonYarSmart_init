@@ -5,43 +5,43 @@
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
         </DropDown-Refresh> -->
-        <div class="topClear">{{deviceInfo}}</div>
+        <div class="topClear"></div>
         <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="changeNickname">
           <ul class="switchGroup">
             <li>
-              <Round-Botton-Frame :state="dev_props.powerstate_1" @event="changeSwitch(data)"></Round-Botton-Frame>
+              <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
             </li>
             <li>
-              <Round-Botton-Frame :state="dev_props.powerstate_2" @event="changeSwitch(data)"></Round-Botton-Frame>
+              <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_2"  :state="dev_props.powerstate_2" @event="changeSwitch($event,'powerstate_2')"></Round-Botton-Frame>
             </li>
             <li>
-              <Round-Botton-Frame :state="dev_props.powerstate_3" @event="changeSwitch(data)"></Round-Botton-Frame>
+              <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_3"  :state="dev_props.powerstate_3" @event="changeSwitch($event,'powerstate_3')"></Round-Botton-Frame>
             </li>
           </ul>
         </Module-Frame>
         <Module-Frame titleName="指示灯" titleImg="title_switch.png" type="normal">
           <ul class="ledSwitch">
             <li>
-              <Round-Edges-Transverse-Rectangle title="关闭"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.indicator === 0 ? 1 : 0" @event="changeSwitch(0,'indicator')" title="关闭" ></Round-Edges-Transverse-Rectangle>
             </li>
             <li>
-              <Round-Edges-Transverse-Rectangle title="状态指示"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.indicator === 1 ? 1 : 0" @event="changeSwitch(1,'indicator')" title="状态指示" ></Round-Edges-Transverse-Rectangle>
             </li>
             <li>
-              <Round-Edges-Transverse-Rectangle title="位置指示"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.indicator === 2 ? 1 : 0" @event="changeSwitch(2,'indicator')" title="位置指示" ></Round-Edges-Transverse-Rectangle>
             </li>
           </ul>
         </Module-Frame>
         <Module-Frame titleName="断电记忆" titleImg="title_switch.png" type="normal">
           <ul class="ledSwitch">
             <li>
-              <Round-Edges-Transverse-Rectangle title="启动全开"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.power_off_memory === 1 ? 1 : 0" @event="changeSwitch(1,'power_off_memory')" title="启动全开"></Round-Edges-Transverse-Rectangle>
             </li>
             <li>
-              <Round-Edges-Transverse-Rectangle title="启动全关"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.power_off_memory === 0 ? 1 : 0" @event="changeSwitch(0,'power_off_memory')" title="启动全关"></Round-Edges-Transverse-Rectangle>
             </li>
             <li>
-              <Round-Edges-Transverse-Rectangle title="断电记忆"></Round-Edges-Transverse-Rectangle>
+              <Round-Edges-Transverse-Rectangle :state="dev_props.power_off_memory === 2 ? 1 : 0" @event="changeSwitch(2,'power_off_memory')" title="断电记忆"></Round-Edges-Transverse-Rectangle>
             </li>
           </ul>
         </Module-Frame>
@@ -93,6 +93,7 @@ export default {
         powerstate_3:0,
         indicator:0,
         power_off_memory:0,
+        childPropName:{powerstate_1:{propName:"开关一",nickName:""},powerstate_2:{propName:"开关二",nickName:""},powerstate_3:{propName:"开关三",nickName:""}},
       },
       compontent_props:{
         headerBar:{
@@ -100,6 +101,7 @@ export default {
         }
       },
       startRefresh_flag:false,//下拉刷新开始刷新标识符
+      
     };
   },
   computed: {
@@ -108,37 +110,59 @@ export default {
         return state;
       },
       deviceInfo: (state) => {
-        console.log("设备信息",state.pubilc.attribute.deviceInfo)
         return state.pubilc.attribute.deviceInfo;
       },
       deviceProps: (state) => {
         return state.pubilc.attribute.deviceProps
+      },
+      deviceChildProps: (state) => {
+        return state.pubilc.attribute.deviceChildProps
       }
     }),
-
+ 
    },
   methods: {
     /*********************************porivate function****************************************************** */
+    childProphName(){
+      let _this = this;
+      let obj = {}
+      const propArr = this.deviceChildProps
+      propArr.map(item => {
+        obj[item.identifier] = new Object();
+        obj[item.identifier]["propName"] = item.name
+        obj[item.identifier]["nickName"] = item.nickName === "" ?  item.name : item.nickName
+      })
+      _this.$set(_this.dev_props,"childPropName",obj)
+    },
     //change nickname
     changeNickname(){
-
-    },
-    changeSwitch(data){
       let _this = this;
-      console.log(data)
-      // const iotId = _this.deviceInfo.iotId;
-      // let item = {
-      //   [propName]:state
-      // }
-      // HonYar.setDeviceProperties(iotId,item)
-      // .then(res => {
+      console.log("设备全部子属性",this.deviceProps)
+      // HonYar.getDeviceChildPrpps(this.deviceInfo.iotId)
+      // .then((res)=>{
+      //   _this.$store.dispatch("changeDate",{
+      //     deviceChildProps:JSON.parse(res).data
+      //   }).then(res => {
+      //     console.log("设备全部子属性",_this.deviceChildProps)
+      //   })
       // })
-      // .catch(err => {
-      //   HonYar.show_toast(err)
-      // })
+      console.log("设备全部子属性",_this.deviceChildProps)
+    },
+    changeSwitch(e,propName){
+      let _this = this;
+      console.log("下发",e,propName)
+      const iotId = _this.deviceInfo.iotId;
+      let item = {
+        [propName]:e
+      }
+      HonYar.setDeviceProperties(iotId,item)
+      .then(res => {
+      })
+      .catch(err => {
+        HonYar.show_toast(err)
+      })
     },
     power_event(state){
-
     },
     /********************************commment function********************************************************** */
     back(){
@@ -146,12 +170,11 @@ export default {
     },
     updateProps(deviceProps){
       let _this = this;
-      console.log("设备属性",deviceProps)
       _this.$set(_this.dev_props,'powerstate_1',deviceProps.powerstate_1)
       _this.$set(_this.dev_props,'powerstate_2',deviceProps.powerstate_2)
       _this.$set(_this.dev_props,'powerstate_3',deviceProps.powerstate_3)
-      _this.$set(_this.dev_props,'powerstate_2',deviceProps.indicator)
-      _this.$set(_this.dev_props,'powerstate_3',deviceProps.power_off_memory)
+      _this.$set(_this.dev_props,'indicator',deviceProps.indicator)
+      _this.$set(_this.dev_props,'power_off_memory',deviceProps.power_off_memory)
     },
     header_event(){
       this.$router.replace({ path: "/more" });
@@ -254,6 +277,12 @@ export default {
       if(JSON.stringify(_this.deviceProps) !== '{}'){
         _this.updateProps(_this.deviceProps)
         clearInterval(wait_data_prop)
+      }
+    },1)
+    let wait_data_childPropName = setInterval(()=>{
+      if(_this.deviceChildProps.length > 0){
+        _this.childProphName()
+        clearInterval(wait_data_childPropName)
       }
     },1)
     //更新设备信息

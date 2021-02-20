@@ -627,8 +627,8 @@ export default {
         ){
         clearInterval(_this.timer.waitData);
         _this.dev_member();
-        console.log("设备信息",_this.deviceInfo)
-        console.log("家信息",_this.homeInfo)
+       // console.log("设备信息",_this.deviceInfo)
+       // console.log("家信息",_this.homeInfo)
         _this.compontent_props.devAppName = _this.deviceInfo.nickName == "" ? _this.deviceInfo.appProductName : _this.deviceInfo.nickName;
         _this.compontent_props.categoryImage = _this.deviceInfo.categoryImage;
         _this.compontent_props.deviceName = _this.deviceInfo.deviceName;
