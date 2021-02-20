@@ -3,8 +3,8 @@
         <div class="model_panel">
             <div class="model_panel_header">
                 <div class="cancel" @click="cancel">取消</div>
-                <div class="title">重复</div>
-                <div class="confirm">确定</div>
+                <div class="title">{{titleName}}</div>
+                <div class="confirm" @click="confirm">确定</div>
             </div>
             <slot></slot>
         </div>
@@ -23,13 +23,20 @@ export default {
         "List-Item-Chick":ListItemChick,
         "List-Item-Value":ListItemValue
     },
+    props:[
+        "title"
+    ],
     data(){
         return {
+            titleName:this.title
         }
     },
     methods:{
         cancel(){
             this.$emit("cancel")
+        },
+        confirm(){
+            this.$emit("confirm")
         }
     },
     created(){

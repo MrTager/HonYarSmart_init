@@ -5,16 +5,19 @@
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
         </DropDown-Refresh> -->
+        <List-Modal v-if="flag.showChangeNameModel" title="编辑昵称" @confirm="changeNameConfirm" @cancel="changeNameCancel">
+          <List-Item-Input v-for="(value,key,index) in dev_props.newChildPropName" :key="index" :title="value.propName" :placeholder="value.nickName" @input="changePropName(key,$event)"></List-Item-Input>
+        </List-Modal>
         <div class="topClear"></div>
         <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="changeNickname">
           <ul class="switchGroup">
             <li>
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
             </li>
-            <li>
+            <li v-if="switchType === 2 || 3">
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_2"  :state="dev_props.powerstate_2" @event="changeSwitch($event,'powerstate_2')"></Round-Botton-Frame>
             </li>
-            <li>
+            <li v-if="switchType === 3">
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_3"  :state="dev_props.powerstate_3" @event="changeSwitch($event,'powerstate_3')"></Round-Botton-Frame>
             </li>
           </ul>
@@ -56,7 +59,7 @@
 import { mapState } from "vuex";
 import HonYar from "@/utils/WebAPI";
 import axios from "axios";
-import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle } from "@/component_library";
+import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle,ListItemInput } from "@/component_library";
 
 /**
  * 
@@ -82,7 +85,8 @@ export default {
     "List-Item-Large":ListItemLarge,
     "Round-Switch":RoundSwitch,
     "Round-Botton-Frame":RoundBottonFrame,
-    "Round-Edges-Transverse-Rectangle":RoundEdgesTransverseRectangle
+    "Round-Edges-Transverse-Rectangle":RoundEdgesTransverseRectangle,
+    "List-Item-Input":ListItemInput
   },
   data() {
     return {
@@ -93,15 +97,19 @@ export default {
         powerstate_3:0,
         indicator:0,
         power_off_memory:0,
-        childPropName:{powerstate_1:{propName:"开关一",nickName:""},powerstate_2:{propName:"开关二",nickName:""},powerstate_3:{propName:"开关三",nickName:""}},
+        childPropName:{powerstate_1:{propName:"开关一",nickName:"",id:""},powerstate_2:{propName:"开关二",nickName:"",id:""},powerstate_3:{propName:"开关三",nickName:"",id:""}},
+        newChildPropName:{}
       },
       compontent_props:{
         headerBar:{
           name:""
         }
       },
+      flag:{
+        showChangeNameModel:false
+      },
       startRefresh_flag:false,//下拉刷新开始刷新标识符
-      
+      switchType:1,//1、一键 2、二键 3、三键
     };
   },
   computed: {
@@ -123,21 +131,54 @@ export default {
    },
   methods: {
     /*********************************porivate function****************************************************** */
+    changeNameConfirm(){
+      let _this = this;
+      this.flag.showChangeNameModel = false
+      HonYar.changeChildPropName(this.dev_props.newChildPropName).then(()=>{
+        HonYar.getDeviceChildPrpps(_this.deviceInfo.iotId)
+        .then((res)=>{
+          _this.$store.dispatch("changeDate",{
+            deviceChildProps:JSON.parse(res).data
+          }).then(res => {
+            _this._this.childProphName()
+          })
+        })
+      })
+    },
+    changeNameCancel(){
+      this.flag.showChangeNameModel = false
+    },
     childProphName(){
       let _this = this;
       let obj = {}
+      let nameArr = ["powerstate_1","powerstate_2","powerstate_3"]
       const propArr = this.deviceChildProps
       propArr.map(item => {
-        obj[item.identifier] = new Object();
-        obj[item.identifier]["propName"] = item.name
-        obj[item.identifier]["nickName"] = item.nickName === "" ?  item.name : item.nickName
+        for(let i = 0;i<nameArr.length;i++){
+          if(nameArr[i] === item.identifier){
+            obj[item.identifier] = new Object();
+            obj[item.identifier]["propName"] = item.name
+            obj[item.identifier]["nickName"] = item.nickName === "" ?  item.name : item.nickName
+            obj[item.identifier]["id"] = item.id
+          }
+        }
       })
-      _this.$set(_this.dev_props,"childPropName",obj)
+      //调整顺序
+      let obj2 = {
+        powerstate_1:"",
+        powerstate_2:"",
+        powerstate_3:""
+      }
+      let obj3 = Object.assign(obj2,obj)
+      _this.$set(_this.dev_props,"childPropName",obj3)
     },
     //change nickname
     changeNickname(){
       let _this = this;
+      this.flag.showChangeNameModel = true
+      this.dev_props.newChildPropName = JSON.parse(JSON.stringify(this.dev_props.childPropName))
       console.log("设备全部子属性",this.deviceProps)
+      
       // HonYar.getDeviceChildPrpps(this.deviceInfo.iotId)
       // .then((res)=>{
       //   _this.$store.dispatch("changeDate",{
@@ -150,7 +191,6 @@ export default {
     },
     changeSwitch(e,propName){
       let _this = this;
-      console.log("下发",e,propName)
       const iotId = _this.deviceInfo.iotId;
       let item = {
         [propName]:e
@@ -161,6 +201,25 @@ export default {
       .catch(err => {
         HonYar.show_toast(err)
       })
+    },
+    changeSwitchType(pk){
+      switch (pk) {
+        case "a1BqBAOw2ii":
+          this.switchType = 1;
+          break;
+        case "a1mTtj3XyVA":
+          this.switchType = 2;
+          break;
+        case "a1T6JIBWh5o":
+          this.switchType = 3;
+          break;
+        default:
+          this.switchType = 1;
+          break;
+      }
+    },
+    changePropName(key,e){
+      this.$set(this.dev_props.newChildPropName[key],"nickName",e)
     },
     power_event(state){
     },
@@ -270,6 +329,7 @@ export default {
       if(JSON.stringify(_this.deviceInfo) !== '{}'){
         //在线状态
         _this.dev_props.online = Number(_this.deviceInfo.status) == 1 ? true : false
+        _this.changeSwitchType(_this.deviceInfo.productKey)
         clearInterval(wait_data)
       }
     },1)

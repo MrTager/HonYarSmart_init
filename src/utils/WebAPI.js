@@ -519,6 +519,31 @@ const WebAPI = {
         })
         
     },
+    /**
+     * 修改子属性名
+     * @param {*} nameGroup 要修改的子属性对象集
+     * {
+     *  powerstate_1:{
+     *      propName:"",
+     *      nickName:"",
+     *      id:""
+     *  }
+     * }
+     */
+    //"/appUserIot/modifyIotPropName", {
+    //     "id": self.names[key].id,
+    //     "nickname": names[0].value
+    // }
+    async changeChildPropName(nameGroup){
+        for(let key in nameGroup){
+            await this.getServer("/appUserIot/modifyIotPropName",{
+                "id": nameGroup[key].id,
+                "nickname":nameGroup[key].nickName
+            },  (res) => {
+                
+            })
+        }
+    },
     /** 获取短时天气属性 */
     getShortWeather(lng, lat, func) {
         let request = {
