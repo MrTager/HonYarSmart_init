@@ -108,7 +108,7 @@ export default {
    start(){
     let _this = this;
     _this.registerJs();
-    //HonYar.hide_header((res)=>{})
+    HonYar.hide_header((res)=>{})
     
     //加载超时处理
     // let loadingTime = setTimeout(()=>{
@@ -122,6 +122,15 @@ export default {
     HonYar.getDeviceInfo('','1','',(res)=>{
       if(JSON.parse(res).code == 200){
         let data = JSON.parse(res).data
+        if(data.owned === 1 || "1"){
+          _this.$store.dispatch("changeDate", {
+              deviceAdmin : true
+          });
+        }else{
+          _this.$store.dispatch("changeDate", {
+              deviceAdmin : false
+          });
+        }
         //console.log("设备信息",data)
         //data传入store里
         _this.$store.dispatch("changeDate", {
@@ -188,6 +197,15 @@ export default {
      HonYar.getHomeInfo("/appHome/getHomeInfo","",(res)=>{
       if(JSON.parse(res).code == 200){
         let _homeInfo = JSON.parse(res).data
+        if(_homeInfo.parent === 1 || "1"){
+          _this.$store.dispatch("changeDate", {
+              homeAdmin : true
+          });
+        }else{
+          _this.$store.dispatch("changeDate", {
+              homeAdmin : false
+          });
+        }
         _this.$store.dispatch('changeDate', {
             homeInfo: _homeInfo,
         });

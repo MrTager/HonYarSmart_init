@@ -38,7 +38,7 @@ export default {
             img:this.titleImg,
             name:this.titleName,
             frameType:this.type, //normal noIcon
-            rightOptionFlag:this.rightOption !== undefined ? true : false
+            rightOptionFlag:this.rightOption !== undefined ? (JSON.parse(this.rightOption) === true ? true : false)  : false,
         }
     },
     methods:{

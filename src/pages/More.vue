@@ -438,10 +438,51 @@ export default {
                   if (JSON.parse(res).data.inputData == "confirm") {
                     HonYar.show_Loading('解绑中...',(res) => {_this.showLoading_flag = true;})
                     if (_this.deviceInfo.iotId.indexOf(".") === -1) {
-                      HonYar.getAliServerData("/uc/unbindAccountAndDev", {
-                        "iotId": _this.deviceInfo.iotId,
-                      }, function (res) {
-                        if(JSON.parse(res).code == 200){
+
+                       if(_this.deviceInfo.netType == "NET_ZIGBEE" &&_this.deviceInfo.owned == "1" || 1){
+                          HonYar.getAliServerData("/awss/subdevice/unbind", {
+                            "productKey": _this.deviceInfo.productKey,
+                            "deviceName": _this.deviceInfo.deviceName
+                          }, function (res) {
+                            if(JSON.parse(res).code !== 6401){
+                              //使用网关提供的设备解绑接口
+                              //判断当前设备是网关还是子设备
+                              var set_Type = 1;
+                              var set_Info = "";
+                              var parentIotId ="";
+                              if(_this.deviceInfo.parentIotId == ""){//网关
+                                  parentIotId = _this.deviceInfo.iotId
+                              }else{
+                                  parentIotId = _this.deviceInfo.parentIotId
+                              }
+                              if(_this.deviceInfo.categoryKey == "GeneralGateway"){//网关
+                                  set_Type = 0;
+                                  set_Info = "0000000000000000";
+                              }else{//子设备
+                                  set_Type = 1;
+                                  set_Info = _this.deviceInfo.deviceName;
+                              }
+                              HonYar.getServer("/appDevice/invokeDeviceService", {
+                                  "request": {
+                                      "platform": "1"
+                                  },
+                                  "params": {
+                                      "iotId":parentIotId,
+                                      "identifier":"DeleteInfo",
+                                      "args":{
+                                              "Type":set_Type,
+                                              "Info":set_Info
+                                          }
+                                  }
+                              }, function (res) {
+                                  if(JSON.parse(res).code == 200){
+                                      
+                                  }
+                              });
+
+                            }
+                          })
+                       }else{
                           HonYar.getServer("/appUser/unbindIot", {
                               "iotId": _this.deviceInfo.iotId,
                               "appKey": _this.appKey
@@ -452,9 +493,25 @@ export default {
                                 HonYar.finishActivity((res)=>{})
                               });
                             }
-                          });
-                        }
-                      })
+                          })
+                       }
+                      // HonYar.getAliServerData("/uc/unbindAccountAndDev", {
+                      //   "iotId": _this.deviceInfo.iotId,
+                      // }, function (res) {
+                      //   if(JSON.parse(res).code == 200){
+                      //     HonYar.getServer("/appUser/unbindIot", {
+                      //         "iotId": _this.deviceInfo.iotId,
+                      //         "appKey": _this.appKey
+                      //     }, function (res) {
+                      //       HonYar.stop_Loading((res)=>{_this.showLoading_flag = false;})
+                      //       if(JSON.parse(res).code == 200){
+                      //         HonYar.show_toast("解绑成功！",(res)=>{
+                      //           HonYar.finishActivity((res)=>{})
+                      //         });
+                      //       }
+                      //     });
+                      //   }
+                      // })
                     }else{
                       HonYar.getServer("/appUser/unbindIot", {
                           "iotId": _this.deviceInfo.iotId,

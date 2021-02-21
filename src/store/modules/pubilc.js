@@ -11,6 +11,8 @@ export default {
             devBindingUserList:{},//此设备的用户绑定关系列表
             deviceProps:{},//设备的全部子属性
             deviceChildProps:[],//设备子属性（开关名称等）
+            deviceAdmin:true,
+            homeAdmin:true,
         },
         /**需要隐藏的设备按品类分 */
         device_config:{

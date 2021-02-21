@@ -115,9 +115,7 @@ export default {
     height: 40px;
     border-radius: 20px;
     background-color: #FFFFFF;
-    -moz-box-shadow:0px 0px 20px #929292;
-    -webkit-box-shadow:0px 0px 20px #929292;
-    box-shadow:0px 0px 20px #929292;
+    @include switchBoxShadow();
     top: calc(50% - 20px);
     transition: all 0.5s;
     -moz-transition: all 0.5s;	/* Firefox */

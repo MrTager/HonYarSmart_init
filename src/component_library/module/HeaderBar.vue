@@ -53,9 +53,10 @@ export default {
     position: fixed;
     left: 0;
     top: 0;
-    -moz-box-shadow:2px 2px 20px #dfdfdf;
-    -webkit-box-shadow:2px 2px 20px #dfdfdf;
-    box-shadow:2px 2px 20px #dfdfdf;
+    // -moz-box-shadow:2px 2px 20px #dfdfdf;
+    // -webkit-box-shadow:2px 2px 20px #dfdfdf;
+    // box-shadow:2px 2px 20px #dfdfdf;
+    @include switchBoxShadow();
     z-index: 777;
 }
 .back{
@@ -68,14 +69,15 @@ export default {
 .title{
     position: absolute;
     width: 560px;
-    font-size: 35px;
-    font-weight: bold;
+    font-size: 36px;
+    font-family: PingFang SC;
+    font-weight: 500;
     height: 40px;
     line-height: 40px;
     text-align: center;
-    color: black;
+    color: #131313;
     left: calc(50% - 280px);
-    top: calc(50% - 20px);
+    top: calc(50% - 18px);
     @include text_limit();
 }
 .rightImg{
