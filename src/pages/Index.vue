@@ -1,15 +1,15 @@
 <template>
   <div class="main"  ref="container" @touchstart="container_touchstart" @touchmove="container_touchmove" @touchend="container_touchend">
     <Animation-Frame>
-      <!-- <Header-Bar @back="back" :titleName="deviceInfo.nickName == '' ? deviceInfo.appProductName : deviceInfo.nickName" type="more" icon="more" @event="header_event"></Header-Bar> -->
+      <Header-Bar @back="back" :titleName="deviceInfo.nickName == '' ? deviceInfo.appProductName : deviceInfo.nickName" type="more" icon="more" @event="header_event"></Header-Bar>
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
         </DropDown-Refresh> -->
         <List-Modal v-if="flag.showChangeNameModel" title="编辑昵称" @confirm="changeNameConfirm" @cancel="changeNameCancel">
-          <List-Item-Input v-for="(value,key,index) in dev_props.newChildPropName" :key="index" :title="value.propName" :placeholder="value.nickName" @input="changePropName(key,$event)"></List-Item-Input>
+          <List-Item-Input v-for="(value,key,index) in dev_props.childPropName" :key="index" :title="value.propName" :placeholder="value.nickName"  @input="changePropName(key,$event)"></List-Item-Input>
         </List-Modal>
         <div class="topClear"></div>
-        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="changeNickname">
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="deviceAdmin && homeAdmin ? changeNickname : false">
           <ul class="switchGroup">
             <li>
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
@@ -48,6 +48,10 @@
             </li>
           </ul>
         </Module-Frame>
+        <Inside-Line-Dividing-Strip></Inside-Line-Dividing-Strip>
+        <Module-Frame titleName="定时设置" titleImg="title_switch.png" type="noIcon">
+          <List-Item type="imgItem" iconName="Cloud" title="云端定时" arrow @event="timing"></List-Item>
+        </Module-Frame>
       </div>
       <div class="offline" v-else>
         <Off-Line></Off-Line>
@@ -59,7 +63,7 @@
 import { mapState } from "vuex";
 import HonYar from "@/utils/WebAPI";
 import axios from "axios";
-import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle,ListItemInput } from "@/component_library";
+import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle,ListItemInput,InsideLineDividingStrip } from "@/component_library";
 
 /**
  * 
@@ -86,7 +90,8 @@ export default {
     "Round-Switch":RoundSwitch,
     "Round-Botton-Frame":RoundBottonFrame,
     "Round-Edges-Transverse-Rectangle":RoundEdgesTransverseRectangle,
-    "List-Item-Input":ListItemInput
+    "List-Item-Input":ListItemInput,
+    "Inside-Line-Dividing-Strip":InsideLineDividingStrip
   },
   data() {
     return {
@@ -125,6 +130,12 @@ export default {
       },
       deviceChildProps: (state) => { 
         return state.pubilc.attribute.deviceChildProps
+      },
+      deviceAdmin:(state) => {
+        return state.pubilc.attribute.deviceAdmin
+      },
+      homeAdmin:(state) => {
+        return state.pubilc.attribute.homeAdmin
       }
     }),
  
@@ -140,7 +151,7 @@ export default {
           _this.$store.dispatch("changeDate",{
             deviceChildProps:JSON.parse(res).data
           }).then(res => {
-            _this._this.childProphName()
+            _this.childProphName()
           })
         })
       })
@@ -219,6 +230,7 @@ export default {
       }
     },
     changePropName(key,e){
+      console.log('父组件',e)
       this.$set(this.dev_props.newChildPropName[key],"nickName",e)
     },
     power_event(state){

@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Main from '@/pages/Index'
 import Timing from '@/pages/Timing'
-import DevList from '@/pages/DevList'
+import More from '@/pages/More'
 
 Vue.use(Router)
 
@@ -17,16 +17,15 @@ export default new Router({
       name:'Main',
       component: Main,
     },
-
     {
       path: '/timing',
       name:'Timing',
       component: Timing
     },
     {
-      path: '/devlist',
-      name:'DevList',
-      component:DevList
+      path: '/more',
+      name:'More',
+      component:More
     }
   ]
 })

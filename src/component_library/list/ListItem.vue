@@ -4,7 +4,7 @@
             <Round-Chick :enable="check_enable" @event="enableChange"></Round-Chick>
         </div>
         <div class="img" v-if="item_type === 'imgItem' ">
-            <img :src="require(`../../assets/images/icon/list/${imageUrl}.png`)" alt="">
+            <img :src="require(`../../assets/images/icon/module/${imageUrl}.png`)" alt="">
         </div>
         <div class="title" :style="{left:item_type === 'check' ? `${80*aspect_ratio}px` : ( item_type === 'imgItem' ? `${120*aspect_ratio}px` : `${30*aspect_ratio}px`)}">
             {{title_content}}
@@ -103,7 +103,18 @@ export default {
             handler(newVal,oldVal){
                 let _this = this;
                 if(newVal !== undefined){
-                    _this.showArrow = JSON.parse(newVal);
+                    if(newVal == ""){
+                        _this.showArrow = true;
+                        return
+                    }
+                    if(JSON.parse(newVal)){
+                        _this.showArrow = true;
+                    }else{
+                        _this.showArrow = false;
+                    }
+                    
+                }else{
+                    _this.showArrow = false;
                 }
             },
             immediate:true,

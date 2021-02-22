@@ -3,7 +3,6 @@
         <div class="title" :style="{color:chick_flag ? 'rgb(0, 0, 0, 1)' : 'rgba(0, 208, 186, 1)'}">{{title_content}}</div>
         <span>{{titleName}}:</span>
         <input type="text" :placeholder="placeholderValue" v-model="newValue" @input="input">
-        <div class="bottom"></div>
     </div>
 </template>
 <script>
@@ -18,22 +17,14 @@ export default {
     },
     props:[
         "title",
-        "placeholder"
+        "placeholder",
+        "maxlength"
     ],
     watch:{
         title:{
             handler(newVal,oldVal){
                 if(newVal !== undefined){
                     this.titleName = newVal
-                }
-            },
-            immediate:true,
-            deep:true
-        },
-        placeholder:{
-            handler(newVal,oldVal){
-                if(newVal !== undefined){
-                    this.placeholderValue = newVal
                 }
             },
             immediate:true,
@@ -48,13 +39,26 @@ export default {
             allow_chick:true,
             chick_flag:this.state,
             titleName:"",
-            placeholderValue:"",
+            placeholderValue:this.placeholder,
+            oldValue:"",
             newValue:"",
         }
     },
     methods:{
         input(){
-            this.$emit("input",this.newValue)
+            console.log(this.placeholderValue)
+
+            let pattern = /[^\u4e00-\u9fa5a-zA-Z0-9]/g
+            if(this.newValue.length === 0){
+                this.$emit("input",this.placeholderValue)
+            }else{
+                this.newValue = this.newValue.replace(pattern, '')
+                if(this.newValue.length > 15){
+                    this.newValue = this.newValue.slice(0,15)
+                }
+                console.log("2",this.newValue)
+                this.$emit("input",this.newValue)
+            }
         }
     },
     mounted(){
