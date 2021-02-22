@@ -123,7 +123,7 @@ export default {
       deviceProps: (state) => {
         return state.pubilc.attribute.deviceProps
       },
-      deviceChildProps: (state) => {
+      deviceChildProps: (state) => { 
         return state.pubilc.attribute.deviceChildProps
       }
     }),
