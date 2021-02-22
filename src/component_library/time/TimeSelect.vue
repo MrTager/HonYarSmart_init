@@ -1,9 +1,6 @@
 <template>
     <div class="TimeSelect">
-        <!-- <div class="hour">
-            <Select-Item></Select-Item>
-        </div> -->
-        <SelectPanel></SelectPanel>
+        <Select-Panel setType="0" chooseCloudHour="2" chooseCloudMin="2"></Select-Panel>
     </div>
 </template>
 <script>
@@ -26,7 +23,7 @@ export default {
 	},
 	components:{
         "Select-Item":SelectItem,
-        "SelectPanel":SelectPanel
+        "Select-Panel":SelectPanel
 	},
     methods:{
 
@@ -53,8 +50,6 @@ export default {
     position: relative;
 	width: 100%;
 	height: 483px;
-//	background-color: burlywood;
-
 }
 .hour{
     position: absolute;

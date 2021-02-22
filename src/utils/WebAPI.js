@@ -522,28 +522,50 @@ const WebAPI = {
     /**
      * 修改子属性名
      * @param {*} nameGroup 要修改的子属性对象集
-     * {
-     *  powerstate_1:{
-     *      propName:"",
-     *      nickName:"",
-     *      id:""
-     *  }
-     * }
      */
-    //"/appUserIot/modifyIotPropName", {
-    //     "id": self.names[key].id,
-    //     "nickname": names[0].value
-    // }
     async changeChildPropName(nameGroup){
         for(let key in nameGroup){
             await this.getServer("/appUserIot/modifyIotPropName",{
                 "id": nameGroup[key].id,
                 "nickname":nameGroup[key].nickName
             },  (res) => {
-                
             })
         }
     },
+    /**
+     * 获取云端定时
+     * @param {*} iotId 设备iotId
+     */
+    getCloudTiming(iotId){
+        return new Promise((resole,reject)=>{
+            this.getServer("/appScene/getTimings",{
+                "iotId": iotId
+            },  (res) => {
+                resole(res)
+            })
+        })
+    },
+    /**
+     * 获取设备的trigger或condition或action功能列表与tsl定义
+     * @param {*} flowType 流程类型(0.trigger,1.condition,2.action
+     * @param {*} iotId 设备id
+     */
+    getlistTslAbility(flowType,iotId){
+        return new Promise((resole,reject)=>{
+            this.getServer("/appScene/listTslAbility",{
+                "flowType":flowType,
+                "iotId": iotId
+            },  (res) => {
+                resole(res)
+            })
+        })
+    },
+    /**
+     * 获取短时天气属性
+     * @param {*} lng 经度
+     * @param {*} lat 纬度
+     * @param {*} func 回调
+     */
     /** 获取短时天气属性 */
     getShortWeather(lng, lat, func) {
         let request = {
@@ -947,28 +969,24 @@ const WebAPI = {
      * @param {*} message 加载提示
      * @param {*} func 回调函数
      */
-    show_Loading(message, func) {
-        HonYarSmartSDK.showLoading({
-            "message": message
-        }, (res) => {
-            if (func !== undefined) {
-                func(res)
-            } else {
-                console.warn("func_undefined");
-            }
+    show_Loading(message) {
+        return new Promise((resolve,reject) => {
+            HonYarSmartSDK.showLoading({
+                "message": message
+            }, (res) => {
+                resolve(res)
+            })
         })
     },
     /**
      * 停止加载框
      * @param {*} func 
      */
-    stop_Loading(func){
-        HonYarSmartSDK.showLoading({},(res) => {
-            if (func !== undefined) {
-                func(res)
-            } else {
-                console.warn("func_undefined");
-            }
+    stop_Loading(){
+        return new Promise((resolve,reject) => {
+            HonYarSmartSDK.showLoading({},(res) => {
+                resolve(res)
+            })
         })
     },
     /**
@@ -1025,12 +1043,16 @@ const WebAPI = {
      */
     getTime() {
         let date = new Date();
+        let nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
         let year = date.getFullYear();
         let mon = date.getMonth() + 1;
         let day = date.getDate();
         let hour = date.getHours();
         let min = date.getMinutes();
         let sec = date.getSeconds();
+        let nextyear = nextDate.getFullYear();
+        let nextmonth = nextDate.getMonth();
+        let nextday = nextDate.getDate();
         mon < 10 ? mon = '0' + mon : mon = '' + mon;
         day < 10 ? day = '0' + day : day = '' + day;
         hour < 10 ? hour = '0' + hour : hour = '' + hour;
@@ -1069,6 +1091,9 @@ const WebAPI = {
         obj['min'] = min;
         obj['sec'] = sec;
         obj['week'] = _week;
+        obj['nextyear'] = nextyear;
+        obj['nextmonth'] = nextmonth;
+        obj['nextday'] = nextday;
         return obj
     },
     /**

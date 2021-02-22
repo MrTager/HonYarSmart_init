@@ -13,6 +13,7 @@ export default {
             deviceChildProps:[],//设备子属性（开关名称等）
             deviceAdmin:true,
             homeAdmin:true,
+            cloudTimeList:[],
         },
         /**需要隐藏的设备按品类分 */
         device_config:{

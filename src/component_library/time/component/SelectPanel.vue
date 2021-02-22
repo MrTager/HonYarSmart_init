@@ -62,7 +62,53 @@ const aspect_ratio = Number(window.screen.width)/750
 
 export default {
     name:"SelectPanel",
-    props: ['setTypes','selectHour','selectMinute','selectSecond','changeInitSelect','selectTimeHour','selectTimeMin','chooseCloudHour','chooseCloudMin'],
+    props: ['setTypes','chooseCloudHour','chooseCloudMin'],
+    watch:{
+        setTypes:{
+            handler(newVal, oldVal) {
+            console.log("类型传值",newVal)
+            var _this = this;
+            if(newVal !== undefined){
+            this.setType = Number(newVal);
+            setTimeout(function(){
+                _this.initSelectPanel();
+                _this.startAddListen(); 
+            },250)
+            }
+            },
+            immediate: true,
+            deep:true,
+        },
+        chooseCloudHour:{
+            immediate: true,
+            deep:true,
+            handler(newVal, oldVal) {
+                console.log("监听传值1",newVal,oldVal)
+                var _this = this;
+                if(newVal !== undefined){
+                    this.timer_hour_num = newVal;
+                    this.$nextTick(()=>{
+                    this.initSelectPanel()
+                    })
+                }
+                
+            },
+            
+        },
+        chooseCloudMin:{
+            immediate: true,
+            deep:true,
+            handler(newVal, oldVal) {
+                console.log("监听传值2",newVal,oldVal)
+                if(newVal !== undefined){
+                    this.timer_minute_num = newVal;
+                    this.$nextTick(()=>{
+                    this.initSelectPanel()
+                    })
+                }
+            },
+        }
+    },
     data() {
         return {
             aspect_ratio:0,
@@ -134,8 +180,8 @@ export default {
                 currentMove: 0,
                 prevMove: 0,
             },
-            timer_hour_num:0,
-            timer_minute_num:0,
+            timer_hour_num:5,
+            timer_minute_num:25,
             count_hour_num:0,
             count_minute_num:0,
             count_second_num:0,
@@ -149,18 +195,24 @@ export default {
     
         
     },
-    mounted: function () {
-            var _this = this;
-        if(_this.setType == 1){
-            this.$refs.TimeSelect_hour_ul.scrollTop = this.timer_hour_num*this.timer_hour_finger.liHeight;
-            _this.$emit('selectTimeHour',_this.timer_hour_num);
-            this.$refs.TimeSelect_minute_ul.scrollTop = this.timer_minute_num*this.timer_minute_finger.liHeight;
-            _this.$emit('selectTimeMin',_this.timer_minute_num);
-        }
-        _this.startAddListen(); 
+    mounted() {
+        let _this = this;
+        // if(_this.setType == 1){
+        //     this.$nextTick(()=>{
+        //         console.log("初始化时间",this.timer_hour_num,this.timer_minute_num)
+        //         console.log("卷起高度",this.timer_hour_num*this.timer_hour_finger.liHeight)
+        //         this.$refs.TimeSelect_hour_ul.scrollTop = this.timer_hour_num*this.timer_hour_finger.liHeight;
+        //         _this.$emit('selectTimeHour',_this.timer_hour_num);
+        //         this.$refs.TimeSelect_minute_ul.scrollTop = this.timer_minute_num*this.timer_minute_finger.liHeight;
+        //         _this.$emit('selectTimeMin',_this.timer_minute_num);
+        //     })
+        // }
+        this.$nextTick(()=>{
+            _this.initSelectPanel()
+        })
         
     },
-    beforeDestory: function () {
+    beforeDestory() {
         if(this.setType == 1){
             this.$refs.TimeSelect_hour_ul.removeEventListener('touchstart', this.listenerTouchStart, false);
             this.$refs.TimeSelect_hour_ul.removeEventListener('touchmove', this.listenerTouchMove, false);
@@ -184,6 +236,15 @@ export default {
         
     },
     methods: {
+        initSelectPanel(){
+            let _this = this;
+            if(_this.setType == 1){
+                this.$refs.TimeSelect_hour_ul.scrollTop = this.timer_hour_num*this.timer_hour_finger.liHeight;
+                _this.$emit('selectTimeHour',_this.timer_hour_num);
+                this.$refs.TimeSelect_minute_ul.scrollTop = this.timer_minute_num*this.timer_minute_finger.liHeight;
+                _this.$emit('selectTimeMin',_this.timer_minute_num);
+            }
+        },
         startAddListen(){
             if(this.setType == 1){
                 this.$refs.TimeSelect_hour_ul.addEventListener('touchstart', this.listenerTouchStart, false);
@@ -473,50 +534,7 @@ export default {
         },
         setMinAction(){}     
     },
-    watch:{
-        setTypes:{
-            handler: function (newVal, oldVal) {
-            var _this = this;
-            if(newVal !== undefined){
-            this.setType = newVal;
-            setTimeout(function(){
-                _this.startAddListen(); 
-            },250)
-            }
-            },
-            immediate: true,
-            deep:true,
-        },
-        // initSelect:{
-        //     handler(newVal, oldVal) {
-        //         console.error('初始化',newVal,oldVal)
-        //         var _this = this;
-        //         if(newVal){//初始化
-        //             _this.$refs.TimeSelect_second_ul_count.scrollTop = 0;
-        //             _this.$refs.TimeSelect_minute_ul_count.scrollTop = 0;
-        //             _this.$refs.TimeSelect_hour_ul_count.scrollTop = 0;
-        //             _this.$emit('changeInitSelect')
-        //         }
-        //       },
-        //       immediate: true,
-        //       deep:true,
-        // },
-        chooseCloudHour:{
-            handler: function (newVal, oldVal) {
-                var _this = this;
-                this.timer_hour_num = newVal;
-                },
-                immediate: true,
-                deep:true,
-        },
-        chooseCloudMin:{
-            handler: function (newVal, oldVal) {
-                this.timer_minute_num = newVal;
-                },
-                immediate: true,
-                deep:true,
-        }
-    },
+
     created(){
         let _this = this;
         let s_width = Number(window.screen.width);
@@ -549,7 +567,8 @@ $TimeSelectHeight:483px;
 .TimeSelect{
     position: relative;
 	width: 100%;
-	height: $TimeSelectHeight;;
+	height: $TimeSelectHeight;
+    background-color: white;
     &_timer_Container{
         position: absolute;
         width: 300px;
