@@ -11,7 +11,7 @@
       <Animation-Frame v-if="addTime_flag">
         <Select-Panel setTypes="1" :chooseCloudHour="cloudDataInfo.time.hour" :chooseCloudMin="cloudDataInfo.time.min" @selectTimeHour="selectTimeHour_cloud" @selectTimeMin="selectTimeMin_cloud"></Select-Panel>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
-        <List-Item type="normal" title="重复" value="周一" @event="chooseWeek"></List-Item>
+        <List-Item type="normal" :title="timeModeTitle" value="周一" @event="chooseWeek"></List-Item>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
         <List-Item :type="propActionListType" v-for="(item,i) in actionModal_data.arr" :key="i" :title="item.propName" :value="item.flag ? '开启' : '关闭'" :enable="item.enable"  @event="chooseAction(i)" @enableEvent="propActionEnable(i, arguments)"></List-Item>
         <List-Modal v-show="weekModal" @cancel="weekModalCancel">
@@ -99,35 +99,35 @@ export default {
         "gatewayIotId":"lF6IHhV8KpjT1GVOvKfy000000",//未获取
         "enable":true,//使能
         "triggers":{
-            "items":[
-                {
-                    "params":{
-                        "cron":"",//已生成
-                        "cronType":"quartz",
-                        "timezoneID":"Asia/Shanghai",
-                        "appShow":{
-                            "content":"" //已生成
-                        }
-                    },
-                    "url":"trigger/timer"
-                }
-            ],
-            "url":"logical/or"
-        },
-        "actions":[
+          "items":[
             {
                 "params":{
-                    "iotId":"lF6IHhV8KpjT1GVOvKfy000000", //未获取
+                    "cron":"",//已生成
+                    "cronType":"quartz",
+                    "timezoneID":"Asia/Shanghai",
                     "appShow":{
-                        "content":" 关闭" //未生成
-                    },
-                    "propertyName":"S2", //开关属性名 未获取
-                    "propertyValue":0,
-                    "productKey":"a1EEiVZcMd9", //pk 未获取
-                    "deviceName":"" //设备DN选填
+                        "content":"" //已生成
+                    }
                 },
-                "url":"action/device/setProperty"
+                "url":"trigger/timer"
             }
+          ],
+          "url":"logical/or"
+        },
+        "actions":[
+          {
+            "params":{
+              "iotId":"", //已获取
+              "appShow":{
+                  "content":" 关闭" //未生成
+              },
+              "propertyName":"S2", //开关属性名 未获取
+              "propertyValue":0,
+              "productKey":"a1EEiVZcMd9", //pk 未获取
+              "deviceName":"" //设备DN选填
+            },
+            "url":"action/device/setProperty"
+          }
         ]
       }
     };
@@ -184,6 +184,20 @@ export default {
         hour,
         min
       }
+    },
+    timeModeTitle(){
+      let arr = this.cloudDataInfo.mode.arr
+      let value = "仅一次"
+      for(let i=0;i<arr.length;i++){
+        if(arr[i].index === 0){
+          if(arr[i].flag){
+            value = "仅一次"
+          }else{
+            value = "重复"
+          }
+        }
+      }
+      return value
     }
   },
   methods: {
@@ -232,16 +246,54 @@ export default {
     //初始化表单
     initCloudDataInfo(){
       let _this = this;
-      console.log("iotId",_this.deviceInfo.iotId)
-      
+      _this.cloudDataInfoSave.actions[0].params.iotId = _this.deviceInfo.iotId
       _this.cloudDataInfo.time.hour = _this.cloudSelectTime.hour
       _this.cloudDataInfo.time.min = _this.cloudSelectTime.min
       //初始化cron
       _this.createCron(_this.cloudDataInfo.mode.arr)
+      _this.createActionArray()
+    },
+    //生成action数组
+    createActionArray(){
+      let _this = this;
       HonYar.getlistTslAbility(2,_this.deviceInfo.iotId)
       .then(res => {
-        //console.log("action列表",res)
+        _this.createUIActiveArr(JSON.parse(res).data)
       })
+    },
+    //生成UI层需要渲染饿格式
+    createUIActiveArr(data){
+      // arr:[
+      //       {propName:'开关一',enable:false,value:"打开",action:[{"prop":'1',"value":"打开"}]}
+      //     ]
+      const newData = data
+      let arr = [];
+      const simplifyAbilityDTOs = newData.simplifyAbilityDTOs
+      const properties = newData.abilityDsl.properties
+      simplifyAbilityDTOs.forEach((value,index) => {
+        let obj = new Object();
+        obj["propName"] = value.name
+        obj["identifier"] = value.identifier
+        obj["enable"] = false;
+        obj["action"] = [];
+        for(let i = 0;i<properties.length;i++){
+          if(properties[i].identifier === value.identifier){
+            let specs = properties[i].dataType.specs
+            let actionObj = new Object();
+            for(let key in specs){
+              if(key === String(value.type)){
+                obj["value"] = specs[key]
+              }
+              actionObj["prop"] = key
+              actionObj["value"] = specs[key]
+              obj["action"].push(actionObj)
+            }
+            break;
+          }
+        }
+        arr.push(obj)
+      });
+      this.cloudDataInfo.action.arr = arr
     },
     //定时选择小时回调
     selectTimeHour_cloud(hour){
