@@ -138,7 +138,6 @@ export default {
         return state.pubilc.attribute.homeAdmin
       }
     }),
- 
    },
   methods: {
     /*********************************porivate function****************************************************** */
