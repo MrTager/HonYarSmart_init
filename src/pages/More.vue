@@ -312,16 +312,15 @@ export default {
             "info",
             _this.compontent_props.devAppName,
             "取消",
-            "确定",
-            (res) => {
+            "确定"
+          ).then((res) => {
               if (JSON.parse(res).data.inputData) {
                 if (JSON.parse(res).data.inputData == "confirm") {
                 }
               } else {
                 //取消
               }
-            }
-          );
+            })
         }
       }else{
         HonYar.show_toast("请求服务器中，请稍后...",(res)=>{})
@@ -367,8 +366,8 @@ export default {
         "info",
         _this.compontent_props.deviceName,
         "取消",
-        "确定",
-        (res) => {
+        "确定"
+      ).then((res) => {
           if (JSON.parse(res).data.inputData) {
             //复制
             if (JSON.parse(res).data.inputData == "confirm") {
@@ -376,8 +375,7 @@ export default {
           } else {
             //取消
           }
-        }
-      );
+        })
     },
     /**删除成员 */
     del_member(name,userId,identityId) {
@@ -388,8 +386,8 @@ export default {
         "info",
         `确定要删除${name}成员吗？`,
         "取消",
-        "确定",
-        (res) => {
+        "确定"
+      ).then((res) => {
           if (JSON.parse(res).data.inputData) {
             if (JSON.parse(res).data.inputData == "confirm") {
               HonYar.show_Loading('删除中...',(res) => {_this.showLoading_flag = true;})
@@ -418,8 +416,7 @@ export default {
           } else {
             //取消
           }
-        }
-      );
+        })
     },
     /**解绑设备 */
     unbind(){
@@ -433,7 +430,7 @@ export default {
               "确定要解绑此设备吗？",
               "取消",
               "确定",
-              (res) => {
+            ).then((res) => {
                 if (JSON.parse(res).data.inputData) {
                   if (JSON.parse(res).data.inputData == "confirm") {
                     HonYar.show_Loading('解绑中...',(res) => {_this.showLoading_flag = true;})
@@ -529,8 +526,7 @@ export default {
                 } else {
                   //取消
                 }
-              }
-            );
+              })
         }
       }else{
         HonYar.show_toast("请求服务器中，请稍后再试...",(res)=>{})

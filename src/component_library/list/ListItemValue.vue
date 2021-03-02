@@ -1,6 +1,6 @@
 <template>
     <div class="ListItemValue" @click="change">
-        <div class="title" :style="{color:chick_flag ? 'rgb(0, 0, 0, 1)' : 'rgba(0, 208, 186, 1)'}">{{title_content}}</div>
+        <div class="title" :style="{color:chick_flag ? 'rgba(0, 208, 186, 1)' : 'rgb(0, 0, 0, 1)'}">{{title_content}}</div>
         <div class="bottom"></div>
     </div>
 </template>
@@ -21,9 +21,9 @@ export default {
     watch:{
         state:{
             handler(newVal,oldVal){
-                this.chick_flag = newVal
-
-                console.log("监听",newVal)
+                if(newVal !== undefined){
+                    this.chick_flag = newVal
+                }
             },
             immediate:true,
             deep:true
@@ -42,15 +42,15 @@ export default {
             title_content:this.value,
             bottom_show:true,
             allow_chick:true,
-            chick_flag:this.state,
+            chick_flag:false,
         }
     },
     methods:{
         change(){
             
-            if(this.allow_chick){
-                this.chick_flag = !this.chick_flag
-            }
+            // if(this.allow_chick){
+            //     this.chick_flag = !this.chick_flag
+            // }
             this.$emit("event",this.chick_flag)
         }
     },
@@ -75,6 +75,9 @@ export default {
     width: 100%;
     height: 100px;
     background-color: white;
+}
+.ListItemValue:active{
+    background-color: $buttonActiveColor;
 }
 .title{
     position: absolute;

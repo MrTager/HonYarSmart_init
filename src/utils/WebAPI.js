@@ -65,6 +65,14 @@ const WebAPI = {
             }
         })
     },
+    /**
+     * 请求服务
+     * @param {*} api 服务api
+     * @param {*} params 参数
+     * @param {*} func 回调
+     * @param {*} platform 平台代码
+     * @param {*} apiVersion 服务端api版本号
+     */
     getServer(api, params, func, platform,apiVersion) {
         let request = {
             "platform": platform === undefined ? "1" : platform,
@@ -920,7 +928,7 @@ const WebAPI = {
         })
     },
     /**
-    * 
+    * 调用原生弹框
     * @param {*} cancel 取消
     * @param {*} title 标题
     * @param {*} message 内容
@@ -928,7 +936,7 @@ const WebAPI = {
     * @param {*} confirmButtonName 确认按键名
     * @param {*} func 回调函数
     */
-    show_alert(cancel, title,messageType, message,cancelButtonName,confirmButtonName, func) {
+    show_alert(cancel, title,messageType, message,cancelButtonName,confirmButtonName) {
         var params = {
             "title": title,
             "messageType": messageType,
@@ -941,13 +949,12 @@ const WebAPI = {
         } else {
             params.mainKey = ["title", "messageType", "message", "confirmButtonName"];
         }
-        HonYarSmartSDK.showDialog(params, (res) => {
-            if (func !== undefined) {
-                func(res)
-            } else {
-                console.warn("func_undefined")
-            }
+        return new Promise((reject,resolve)=>{
+            HonYarSmartSDK.showDialog(params, (res) => {
+                reject(res)
+            })
         })
+        
     },
     /**
      * 
@@ -1131,7 +1138,7 @@ const WebAPI = {
         setTimeout(()=>{
             func(-1)
         },30000)
-    }
+    },
 
 
 }

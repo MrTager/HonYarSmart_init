@@ -2,7 +2,8 @@
     <div class="HeaderBar">
         <img class="back" src="@/assets/images/icon/header/back.png" alt="后退" @click="back()">
         <div class="title">{{titleName}}</div>
-        <img v-if="type !== ''" class="rightImg" :src="require(`../../assets/images/icon/header/${icon}.png`)" alt="更多" @click="event()">
+        <img v-if="type === 'add'" class="rightImg" :src="require(`../../assets/images/icon/header/${icon}.png`)"  @click="event()">
+        <div v-if="type === 'save'" class="textOptionValue" @click="textOptionEvent">{{textOption}}</div>
     </div>
 </template>
 <script>
@@ -14,15 +15,30 @@ export default {
         "titleName",
         "type",
         "icon",
+        "textOptionValue",
     ],
     watch:{
+        type:{
+            handler(newVal,oldVal){
+                if(newVal !== undefined){
+                    this.type_flag = newVal
+                }
+            },
+            immediate:true,
+            deep:true
+        }
     },
     data(){
         return {
+            type_flag:"",
+            textOption:'保存'
 
         }
     },
     methods:{
+        textOptionEvent(){
+            this.$emit("textOptionEvent")
+        },
         back(){
           this.$emit("back");
         },
@@ -86,5 +102,14 @@ export default {
     height: 40px;
     right: 40px;
     top: calc(50% - 20px);
+}
+.textOptionValue{
+     position: absolute;
+    width: 80px;
+    height: 40px;
+    right: 40px;
+    top: calc(50% - 20px);
+    font-size: 40px;
+    color: $honyarColor;
 }
 </style>

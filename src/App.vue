@@ -92,6 +92,7 @@ export default {
         });
     },
     registerJs () {
+      let _this = this;
       this.$bridge.registerHandler('nativeSignal', (data, responseCallback) => {
         //this.$store.dispatch('updateNativeSignal', data)
         //console.log('回复数据1',data)

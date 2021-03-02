@@ -1,6 +1,6 @@
 <template>
   <div class="Timing" ref="container" @touchstart="container_touchstart" @touchmove="container_touchmove" @touchend="container_touchend">
-      <Header-Bar @back="back()" :titleName="titleName" :type="headerType" icon="add" @event="addCloudTime"></Header-Bar>
+      <Header-Bar @back="back()" :titleName="titleName" :type="headerType" icon="add" @textOptionEvent="saveCloudTime" @event="addCloudTime"></Header-Bar>
       <Blank-Dividing-Strip></Blank-Dividing-Strip>
       <Animation-Frame v-if="addTime_flag === false">
         <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
@@ -11,14 +11,14 @@
       <Animation-Frame v-if="addTime_flag">
         <Select-Panel setTypes="1" :chooseCloudHour="cloudDataInfo.time.hour" :chooseCloudMin="cloudDataInfo.time.min" @selectTimeHour="selectTimeHour_cloud" @selectTimeMin="selectTimeMin_cloud"></Select-Panel>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
-        <List-Item type="normal" :title="timeModeTitle" value="周一" @event="chooseWeek"></List-Item>
+        <List-Item type="normal" :title="timeModeTitleValue.title" :value="timeModeTitleValue.value" @click.native="chooseWeek"></List-Item>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
-        <List-Item :type="propActionListType" v-for="(item,i) in actionModal_data.arr" :key="i" :title="item.propName" :value="item.flag ? '开启' : '关闭'" :enable="item.enable"  @event="chooseAction(i)" @enableEvent="propActionEnable(i, arguments)"></List-Item>
-        <List-Modal v-show="weekModal" @cancel="weekModalCancel">
-          <List-Item-Chick v-for="(item,i) in weekModal_data.arr" :key="i" :title="item.name" :state="item.flag" @event="changeWeek(i)"></List-Item-Chick>
+        <List-Item :type="propActionListType" v-for="(item,i) in cloudDataInfo.action.arr" :key="i" :title="item.propName" :value="item.value" :enable="item.enable"  @event="chooseAction(i)" @enableEvent="propActionEnable(i, arguments)"></List-Item>
+        <List-Modal v-show="weekModal" @cancel="weekModalCancel" @confirm="weekModalConfirm">
+          <List-Item-Chick v-for="(item,i) in cloudDataInfo.mode.arr_backup" :key="i" :title="item.name" :state="item.flag" @event="changeWeek(i,item.flag)"></List-Item-Chick>
         </List-Modal>
-        <List-Modal v-show="actionModal" @cancel="actionModalCancel">
-          <List-Item-Value v-for="(item,i) in actionModal_data.arr[nowChooseActionIndex].value" :key="i" :state="true" :value="item" @event="changeAction(nowChooseActionIndex,i,arguments)"></List-Item-Value>
+        <List-Modal v-show="actionModal" @cancel="actionModalCancel" @confirm="actionModalConfirm">
+          <List-Item-Value v-for="(item,i) in cloudDataInfo.action.arr[nowChooseActionIndex].action" :key="i" :state="cloudDataInfo.action.arr[nowChooseActionIndex].actionProp === item.prop ? true : false" :value="item.value" @click.native="changeAction(nowChooseActionIndex,i,item)"></List-Item-Value>
         </List-Modal>
       </Animation-Frame>
   </div>
@@ -53,17 +53,6 @@ export default {
       addTime_flag:false,
       weekModal:false,
       actionModal:false,
-      weekModal_data:{
-        arr:[
-          {name:'仅一次',flag:true},
-          {name:'周日',flag:false},
-          {name:'周一',flag:false},
-          {name:'周二',flag:false},
-          {name:'周三',flag:false},
-          {name:'周四',flag:false},
-          {name:'周五',flag:false},
-          {name:'周六',flag:false}]
-      },
       actionModal_data:{
         arr:[
           {propName:'开关一',enable:0,flag:true,value:['开启','关闭']},
@@ -86,14 +75,27 @@ export default {
           {name:'周三',flag:false,index:4},
           {name:'周四',flag:false,index:5},
           {name:'周五',flag:false,index:6},
+          {name:'周六',flag:false,index:7}],
+          arr_backup:[
+          {name:'仅一次',flag:true,index:0},
+          {name:'周日',flag:false,index:1},
+          {name:'周一',flag:false,index:2},
+          {name:'周二',flag:false,index:3},
+          {name:'周三',flag:false,index:4},
+          {name:'周四',flag:false,index:5},
+          {name:'周五',flag:false,index:6},
           {name:'周六',flag:false,index:7}]
         },
         action:{
           arr:[
-            {propName:'开关一',enable:0,flag:true,value:['开启','关闭']},
-            {propName:'开关二',enable:1,flag:true,value:['开启','关闭']}
+
+          ],
+          arr_backup:[
+
           ]
         }
+      },
+      cloudDataInfo_backup:{
       },
       cloudDataInfoSave:{
         "gatewayIotId":"lF6IHhV8KpjT1GVOvKfy000000",//未获取
@@ -157,7 +159,7 @@ export default {
       }
     }),
     propActionListType(){
-      if(this.actionModal_data.arr.length > 1){
+      if(this.cloudDataInfo.action.arr.length > 1){
         return 'check'
       }else{
         return 'normal'
@@ -185,19 +187,29 @@ export default {
         min
       }
     },
-    timeModeTitle(){
+    timeModeTitleValue(){
       let arr = this.cloudDataInfo.mode.arr
-      let value = "仅一次"
+      let obj = {
+        title:'仅一次',
+        value:''
+      }
+      let weekNameArr = []
       for(let i=0;i<arr.length;i++){
         if(arr[i].index === 0){
           if(arr[i].flag){
-            value = "仅一次"
-          }else{
-            value = "重复"
+            obj.title = "仅一次"
+            obj.value = ''
+          }
+        }else{
+          if(arr[i].flag){
+            weekNameArr.push(arr[i].name)
+            obj.title = "重复"
+            obj.value = weekNameArr.join(",")
+            
           }
         }
       }
-      return value
+      return obj
     }
   },
   methods: {
@@ -270,31 +282,67 @@ export default {
       let arr = [];
       const simplifyAbilityDTOs = newData.simplifyAbilityDTOs
       const properties = newData.abilityDsl.properties
+      console.log("lalalla",simplifyAbilityDTOs,properties)
       simplifyAbilityDTOs.forEach((value,index) => {
         let obj = new Object();
         obj["propName"] = value.name
         obj["identifier"] = value.identifier
         obj["enable"] = false;
         obj["action"] = [];
+        obj["type"] = value.type
+        obj["actionProp"] = "0"; //当前动作选中prop
         for(let i = 0;i<properties.length;i++){
           if(properties[i].identifier === value.identifier){
             let specs = properties[i].dataType.specs
-            let actionObj = new Object();
             for(let key in specs){
+              let actionObj = new Object();
               if(key === String(value.type)){
                 obj["value"] = specs[key]
               }
               actionObj["prop"] = key
               actionObj["value"] = specs[key]
-              obj["action"].push(actionObj)
+              obj.action.push(actionObj)
             }
             break;
           }
         }
         arr.push(obj)
       });
-      this.cloudDataInfo.action.arr = arr
+      // this.cloudDataInfo.action.arr = arr
+      this.$set(this.cloudDataInfo.action,"arr",arr)
+      console.log("actionARR",arr)
     },
+    //action enable事件
+    propActionEnable(){
+      const index = arguments[0];
+      const enable = arguments[1][0]
+      this.cloudDataInfo.action.arr[index].enable = enable
+    },
+    //选择动作
+    chooseAction(index){
+      this.actionModal = !this.actionModal;
+      this.nowChooseActionIndex = index
+      this.cloudDataInfo.action.arr_backup = JSON.parse(JSON.stringify(this.cloudDataInfo.action.arr))
+      this.$set(this.cloudDataInfo.action.arr[index],"actionProp",String(this.cloudDataInfo.action.arr[index].type))
+      console.log("动作",this.cloudDataInfo.action.arr[index].actionProp,this.cloudDataInfo.action.arr[index].type)
+    },
+    //改变动作
+    changeAction(nowChooseActionIndex,actionIndex,item){
+      this.$set(this.cloudDataInfo.action.arr[nowChooseActionIndex],"actionProp",item.prop)
+      this.$set(this.cloudDataInfo.action.arr[nowChooseActionIndex],"value",item.value)
+      this.$set(this.cloudDataInfo.action.arr[nowChooseActionIndex],"type",Number(this.cloudDataInfo.action.arr[nowChooseActionIndex].actionProp))
+    },
+    //取消改变动作
+    actionModalCancel(){
+      this.$set(this,"actionModal",false)
+      this.cloudDataInfo.action.arr = JSON.parse(JSON.stringify(this.cloudDataInfo.action.arr_backup))
+    },
+    //确定保存改变动作
+    actionModalConfirm(){
+      this.$set(this,"actionModal",false)
+      this.cloudDataInfo.action.arr_backup = JSON.parse(JSON.stringify(this.cloudDataInfo.action.arr))
+    },
+
     //定时选择小时回调
     selectTimeHour_cloud(hour){
       this.cloudDataInfo.time.hour = String(hour)
@@ -305,63 +353,100 @@ export default {
       this.cloudDataInfo.time.min = String(min)
       this.createCron(this.cloudDataInfo.mode.arr)
     },
+   
+    delClould(){
+      alert("删除")
+    },
+
+   
+
+
+
+    weekModalCancel(){
+      this.weekModal = !this.weekModal
+    },
+    weekModalConfirm(){
+      this.weekModal = !this.weekModal
+      this.cloudDataInfo.mode.arr = this.cloudDataInfo.mode.arr_backup
+      this.initCloudDataInfo()
+    }, 
+    chooseWeek(){
+      this.weekModal = !this.weekModal
+      this.cloudDataInfo.mode.arr_backup = JSON.parse(JSON.stringify(this.cloudDataInfo.mode.arr));
+    },
+    changeWeek(index,flag){
+      console.log("index",index,flag)
+      let _this = this;
+      if(index === 0){
+        for(let i=0;i<_this.cloudDataInfo.mode.arr_backup.length;i++){
+          _this.$set(_this.cloudDataInfo.mode.arr_backup[i],"flag",false)
+        }
+        _this.$set(_this.cloudDataInfo.mode.arr_backup[0],"flag",true)
+      }else{
+        _this.$set(_this.cloudDataInfo.mode.arr_backup[0],"flag",false)
+        _this.$set(_this.cloudDataInfo.mode.arr_backup[index],"flag",!flag)
+        let noOnce = false;
+        for(let i=0;i<_this.cloudDataInfo.mode.arr_backup.length;i++){
+          if(_this.cloudDataInfo.mode.arr_backup[i].flag){
+            noOnce = true
+          }
+        }
+        if(noOnce){
+
+        }else{
+          _this.$set(_this.cloudDataInfo.mode.arr_backup[0],"flag",true)
+        }
+      }
+    },
+
+    saveCloudTime(){
+      let _this = this;
+      let newData = _this.cloudDataInfo;
+      let setData = _this.cloudDataInfoSave;
+      console.log("总数据",newData,setData)
+    },
+
+
+
+
+
+
+    addCloudTime(){
+      let _this = this;
+      this.$set(this,"addTime_flag",true)
+      this.$set(this,"titleName",'添加定时')
+      this.$set(this,"headerType",'save')
+          //备份初始状态
+      _this.cloudDataInfo_backup = JSON.parse(JSON.stringify(_this.cloudDataInfo))
+    },
+
     back(){
+      let _this = this;
       if(this.addTime_flag){
-        this.$set(this,"addTime_flag",false)
-        this.$set(this,"titleName",'定时')
-        this.$set(this,"headerType",'add')
+          HonYar.show_alert(
+              true,
+              "解绑",
+              "info",
+              "此页数据未保存，确定要退出吗？",
+              "取消",
+              "确定",
+            ).then((res) => {
+              if (JSON.parse(res).data.inputData == "confirm") {
+                _this.cloudDataInfo = JSON.parse(JSON.stringify(_this.cloudDataInfo_backup))
+                _this.$set(this,"addTime_flag",false)
+                _this.$set(this,"titleName",'定时')
+                _this.$set(this,"headerType",'add')
+              }
+            })
+        
+        
+         
+        
       }else{
         this.$router.replace({ path: "/" });
       }
     },
-    delClould(){
-      alert("删除")
-    },
-    addCloudTime(){
-      this.$set(this,"addTime_flag",true)
-      this.$set(this,"titleName",'添加定时')
-      this.$set(this,"headerType",'')
 
-    },
-    propActionEnable(){
-      const index = arguments[0];
-      const enable = arguments[1][0]
-      this.actionModal_data.arr[index].enable = enable
-    },
-    weekModalCancel(){
-      this.$set(this,"weekModal",false)
-    },
-    actionModalCancel(){
-      this.$set(this,"actionModal",false)
-    },
-    changeWeek(index){
-      const oldState = this.weekModal_data.arr[index].flag
-      let newState = !oldState
-      if(index === 0){
-        for(let i=0;i<this.weekModal_data.arr.length;i++){
-          this.$set(this.weekModal_data.arr[i],"flag",false)
-        }
-        this.$set(this.weekModal_data.arr[0],"flag",newState)
-      }else{
-        this.$set(this.weekModal_data.arr[0],"flag",false)
-        this.$set(this.weekModal_data.arr[index],"flag",newState)
-      }
-    },
-    chooseWeek(){
-      this.weekModal = !this.weekModal
-    },
-    chooseAction(index){
-      this.actionModal = !this.actionModal;
-      this.nowChooseActionIndex = index
-    },
-    changeAction(actionArrIndex,propIndex){
-      console.log("选择动作",arguments)
-      for(let i =0; i<this.actionModal_data.arr[actionArrIndex].prop.length;i++){
-        this.actionModal_data.arr[actionArrIndex].prop[i].flag = false;
-      }
-      this.actionModal_data.arr[actionArrIndex].prop[propIndex].flag = true;
-
-    },
     action_Refresh(done) {
       done();
     },
@@ -408,6 +493,7 @@ export default {
       }
     }, 1);
     HonYar.getCloudTiming()
+
   },
   created() {
     let _this = this;

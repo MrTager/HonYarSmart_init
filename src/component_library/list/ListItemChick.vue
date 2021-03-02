@@ -27,7 +27,6 @@ export default {
         },
         state:{
             handler(newVal,oldVal){
-                console.log("状态",newVal)
                 this.check_show = newVal
             }
         }

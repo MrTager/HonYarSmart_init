@@ -40,6 +40,7 @@
     user-select: none;
 };
 $buttonActiveColor:rgba(211, 211, 211,0.5);
+$honyarColor:rgb(0, 208, 186);
 @mixin switchBoxShadow(){
     -moz-box-shadow:0px 0px 10px #c6c6c6;
     -webkit-box-shadow:0px 0px 10px #c6c6c6;

@@ -83,7 +83,7 @@ export default {
             handler(newVal,oldVal){
                 let _this = this;
                 if(newVal !== undefined){
-                    _this.check_enable = newVal;
+                    _this.check_enable = JSON.parse(newVal) ? 1 : 0;
                 }
             },
             immediate:true,
@@ -93,7 +93,18 @@ export default {
             handler(newVal,oldVal){
                 let _this = this;
                 if(newVal !== undefined){
-                    _this.bottom_line = JSON.parse(newVal);
+                    if(newVal == ""){
+                        _this.bottom_line = true;
+                        return
+                    }
+                    if(JSON.parse(newVal)){
+                        _this.bottom_line = true;
+                    }else{
+                        _this.bottom_line = false;
+                    }
+                    
+                }else{
+                    _this.bottom_line = false;
                 }
             },
             immediate:true,

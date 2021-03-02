@@ -9,7 +9,7 @@
           <List-Item-Input v-for="(value,key,index) in dev_props.childPropName" :key="index" :title="value.propName" :placeholder="value.nickName"  @input="changePropName(key,$event)"></List-Item-Input>
         </List-Modal>
         <div class="topClear"></div>
-        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption="true" @rightOptionEvent="deviceAdmin && homeAdmin ? changeNickname : false">
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=true @rightOptionEvent="deviceAdmin && homeAdmin ? changeNickname(true) : changeNickname(false)">
           <ul class="switchGroup">
             <li>
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
@@ -183,21 +183,14 @@ export default {
       _this.$set(_this.dev_props,"childPropName",obj3)
     },
     //change nickname
-    changeNickname(){
+    changeNickname(flag){
       let _this = this;
-      this.flag.showChangeNameModel = true
-      this.dev_props.newChildPropName = JSON.parse(JSON.stringify(this.dev_props.childPropName))
-      console.log("设备全部子属性",this.deviceProps)
-      
-      // HonYar.getDeviceChildPrpps(this.deviceInfo.iotId)
-      // .then((res)=>{
-      //   _this.$store.dispatch("changeDate",{
-      //     deviceChildProps:JSON.parse(res).data
-      //   }).then(res => {
-      //     console.log("设备全部子属性",_this.deviceChildProps)
-      //   })
-      // })
-      console.log("设备全部子属性",_this.deviceChildProps)
+      if(flag){
+        this.flag.showChangeNameModel = true
+        this.dev_props.newChildPropName = JSON.parse(JSON.stringify(this.dev_props.childPropName))
+      }else{
+        HonYar.show_toast("非设备管理员没有权限操作")
+      }
     },
     changeSwitch(e,propName){
       let _this = this;
@@ -229,7 +222,6 @@ export default {
       }
     },
     changePropName(key,e){
-      console.log('父组件',e)
       this.$set(this.dev_props.newChildPropName[key],"nickName",e)
     },
     power_event(state){
@@ -402,6 +394,7 @@ export default {
 .topClear{
   width: 100%;
   height: 40px;
+  margin-top: 80px;
 }
 .switchGroup{
   width: 100%;
