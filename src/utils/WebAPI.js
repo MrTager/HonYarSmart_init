@@ -967,7 +967,7 @@ const WebAPI = {
             if (func !== undefined) {
                 func(res)
             } else {
-                console.warn("func_undefined"); 
+                
             }
         })
     },

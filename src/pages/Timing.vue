@@ -5,7 +5,9 @@
       <Animation-Frame v-if="addTime_flag === false">
         <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
           <div v-if="nullDataFlag" class="nullData"><span>无定时数据,请添加定时</span></div>
-          <!-- <List-Item-Timing time="07:00" info="周一 开启开关一 开启开关二 开启开关三" @delete="delClould" v-for="(item,i) in new Array(10)" :key="i"></List-Item-Timing> -->
+          <div v-if="nullDataFlag === false">
+            <List-Item-Timing :time="item.time" :info="item.content" @delete="delClould" v-for="(item,i) in cloudList" :key="i"></List-Item-Timing>
+          </div>
         </DropDown-Refresh>
       </Animation-Frame>
       <Animation-Frame v-if="addTime_flag">
@@ -60,7 +62,6 @@ export default {
         ]
       },
       nowChooseActionIndex:0,
-      timeList:[],//定时列表
       cloudDataInfo:{ //ui组件数据格式
         time:{
           hour:"0",
@@ -98,7 +99,7 @@ export default {
       cloudDataInfo_backup:{
       },
       cloudDataInfoSave:{
-        "gatewayIotId":"lF6IHhV8KpjT1GVOvKfy000000",//未获取
+        "gatewayIotId":"",//设备IOTID
         "enable":true,//使能
         "triggers":{
           "items":[
@@ -119,7 +120,7 @@ export default {
         "actions":[
           {
             "params":{
-              "iotId":"", //已获取
+              "iotId":"", //设备IOTID
               "appShow":{
                   "content":" 关闭" //未生成
               },
@@ -131,7 +132,8 @@ export default {
             "url":"action/device/setProperty"
           }
         ]
-      }
+      },
+      cloudList:[],//定时列表
     };
   },
   computed: {
@@ -156,7 +158,13 @@ export default {
       },
       appKey: (state)=>{
         return state.pubilc.attribute.appKey;
-      }
+      },
+      cloudTimeList: (state) => {
+        return state.pubilc.attribute.cloudTimeList;
+      },
+      deviceChildProps: (state) => { 
+        return state.pubilc.attribute.deviceChildProps
+      },
     }),
     propActionListType(){
       if(this.cloudDataInfo.action.arr.length > 1){
@@ -166,7 +174,7 @@ export default {
       }
     },
     nullDataFlag(){
-      if(this.timeList.length == 0){
+      if(this.cloudList.length == 0){
         return true
       }else{
         return false
@@ -258,12 +266,22 @@ export default {
     //初始化表单
     initCloudDataInfo(){
       let _this = this;
-      _this.cloudDataInfoSave.actions[0].params.iotId = _this.deviceInfo.iotId
-      _this.cloudDataInfo.time.hour = _this.cloudSelectTime.hour
-      _this.cloudDataInfo.time.min = _this.cloudSelectTime.min
+      //_this.cloudDataInfoSave.actions[0].params.iotId = _this.deviceInfo.iotId
+      _this.cloudDataInfoSave.gatewayIotId = _this.deviceInfo.iotId
+      _this.cloudDataInfo.time.hour = _this.transitionTime(_this.cloudSelectTime.hour)
+      _this.cloudDataInfo.time.min = _this.transitionTime(_this.cloudSelectTime.min)
       //初始化cron
       _this.createCron(_this.cloudDataInfo.mode.arr)
       _this.createActionArray()
+    },
+    transitionTime(num){
+      let str =''
+      if(Number(num) < 10){
+        str = '0'+ num
+      }else{
+        str = num
+      }
+      return str
     },
     //生成action数组
     createActionArray(){
@@ -403,12 +421,71 @@ export default {
       let _this = this;
       let newData = _this.cloudDataInfo;
       let setData = _this.cloudDataInfoSave;
-      console.log("总数据",newData,setData)
+      console.log("总数据",JSON.stringify(newData),JSON.stringify(setData))
+      //遍历action 形成要下发的json数据
+      let actionArr = [];
+      newData.action.arr.forEach((item)=>{
+        console.log("item",item)
+        let obj = new Object();
+        obj["params"] = {};
+        obj.params.iotId = _this.deviceInfo.iotId;
+        obj.params["appShow"] = {};
+        obj.params.appShow["content"] = item.value;
+        obj.params["propertyName"] = item.identifier;
+        obj.params["propertyValue"] = Number(item.actionProp);
+        obj.params["productKey"] = _this.deviceInfo.productKey;
+        obj.params["deviceName"] = _this.deviceInfo.deviceName;
+        obj["url"] = "action/device/setProperty"
+        actionArr.push(obj)
+      })
+      setData.actions = actionArr;
+      HonYar.show_Loading("设置中...")
+      HonYar.getServer("/appScene/addTiming",setData,(res)=>{
+        console.log("下发定时反馈",res)
+        if(JSON.parse(res).code === 200){
+          HonYar.getServer("/appScene/getTimings", {"gatewayIotId": _this.deviceInfo.iotId},(res)=>{
+            console.log("定时",res)
+            _this.$store.dispatch("changeDate",{
+              cloudTimeList:JSON.parse(res).data
+            }).then(res => {
+              //渲染列表
+              _this.loadCloudTimeList()
+            })
+          })
+          HonYar.stop_Loading();
+          _this.backInit();
+        }else{
+          HonYar.show_toast(res)
+        }
+      })
     },
 
-
-
-
+    loadCloudTimeList(){
+      let _this = this;
+      let list = _this.cloudTimeList
+      let showArr = [];
+      list.forEach(item => {
+        let listItem = item;
+        let obj = new Object();
+        obj["time"] = listItem.triggers.items[0].params.appShow.content
+        obj["ruleId"] = listItem.ruleId
+        obj["content"] = ""
+        console.log('listItem',listItem.actions)
+        for(let i=0;i<listItem.actions.length;i++){
+          const propArr = _this.deviceChildProps
+          propArr.forEach(item2 => {
+                console.log("tiaoshinnnnn",listItem.actions[i].params.propertyName, item2.identifier);
+              if(listItem.actions[i].params.propertyName === item2.identifier){
+                obj.content = listItem.actions[i].params.appShow.content
+                obj.content += item2.nickName === "" ?  item2.name : item2.nickName
+              }
+            
+          })
+        }
+        showArr.push(obj)
+      })
+      _this.$set(_this,"cloudList",showArr)
+    },
 
 
     addCloudTime(){
@@ -419,7 +496,13 @@ export default {
           //备份初始状态
       _this.cloudDataInfo_backup = JSON.parse(JSON.stringify(_this.cloudDataInfo))
     },
-
+    backInit(){
+      let _this = this;
+      _this.cloudDataInfo = JSON.parse(JSON.stringify(_this.cloudDataInfo_backup))
+      _this.$set(this,"addTime_flag",false)
+      _this.$set(this,"titleName",'定时')
+      _this.$set(this,"headerType",'add')
+    },
     back(){
       let _this = this;
       if(this.addTime_flag){
@@ -432,10 +515,7 @@ export default {
               "确定",
             ).then((res) => {
               if (JSON.parse(res).data.inputData == "confirm") {
-                _this.cloudDataInfo = JSON.parse(JSON.stringify(_this.cloudDataInfo_backup))
-                _this.$set(this,"addTime_flag",false)
-                _this.$set(this,"titleName",'定时')
-                _this.$set(this,"headerType",'add')
+                _this.backInit()
               }
             })
         
@@ -486,6 +566,14 @@ export default {
             cloudTimeList:list
           }).then(res => {
             _this.$set(_this,"timeList",list)
+          })
+          HonYar.getServer("/appScene/getTimings", {"gatewayIotId": _this.deviceInfo.iotId},(res)=>{
+            _this.$store.dispatch("changeDate",{
+              cloudTimeList:JSON.parse(res).data
+            }).then(res => {
+              //渲染列表
+              _this.loadCloudTimeList()
+            })
           })
         })
         _this.initCloudDataInfo();

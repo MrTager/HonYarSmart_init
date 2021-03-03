@@ -100,13 +100,18 @@ export default {
 }
 .time{
     position: absolute;
-    width: 160px;
-    height: 50px;
-    left: 30px;
-    top: 25px;
-    font-size: 50px;
-    line-height: 50px;
-    text-align: center;
+    // width: 160px;
+    // height: 50px;
+    // left: 30px;
+    // top: 25px;
+    // font-size: 50px;
+    // line-height: 50px;
+    // text-align: center;
+    background-color: cadetblue;
+    @include oneLineTextStyle_noColor(420px,50px,50px);
+    top: 20px;
+    left: 20px;
+    text-align: left;
     transition: all 0.5s;
     -moz-transition: all 0.5s;	/* Firefox */
     -webkit-transition: all 0.5s;	/* Safari 和 Chrome */
@@ -114,12 +119,10 @@ export default {
 }
 .info{
     position: absolute;
-    width: 550px;
-    height: 60px;
+    @include oneLineTextStyle_noColor(550px,60px,20px);
+    text-align: left;
     left: 40px;
     bottom: 5px;
-    line-height: 30px;
-    @include text_limit();
     transition: all 0.5s;
     -moz-transition: all 0.5s;	/* Firefox */
     -webkit-transition: all 0.5s;	/* Safari 和 Chrome */
