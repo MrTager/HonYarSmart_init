@@ -9,7 +9,7 @@
         <div class="title" :style="{left:item_type === 'check' ? `${80*aspect_ratio}px` : ( item_type === 'imgItem' ? `${120*aspect_ratio}px` : `${30*aspect_ratio}px`)}">
             {{title_content}}
         </div>
-        <div class="value" :style="{right:showArrow ? `${60*aspect_ratio}px` : `${35*aspect_ratio}px`}" @click="click">
+        <div class="value" :style="{right:showArrow ? `${60*aspect_ratio}px` : `${35*aspect_ratio}px`,fontSize:value_content.length > 6 ? `${18*aspect_ratio}px` : `${35*aspect_ratio}px`}" @click="click">
             {{value_content}}
         </div>
         <img class="arrow" v-if="showArrow"  src="../../assets/images/icon/gray_arrow.png" alt="" @click="click">

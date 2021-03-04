@@ -1,9 +1,10 @@
 <template>
     <div class="ListItemTiming" @touchstart="del_start" @touchmove="del_move" @touchend="del_end">
         <div class="time" :style="{color:enable === 0 ? 'rgba(191, 191, 191, 1)' : 'rgba(51, 51, 51, 1)'}">{{timeValue}}</div>
+        <div class="modeInfo" :style="{color:enable === 0 ? 'rgba(191, 191, 191, 1)' : 'rgba(51, 51, 51, 1)'}">{{modeInfo}}</div>
         <div class="info" :style="{color:enable === 0 ? 'rgba(203, 203, 203, 1)' : 'rgba(102, 102, 102, 1)'}">{{timeInfo}}</div>
         <div class="switch">
-            <Chick-Switch :enable="enable"  @state="setState" @event="switchEvent"></Chick-Switch>
+            <Chick-Switch :enable="enable"   @event="setState"></Chick-Switch>
         </div>
         <InsideLine-DividingStrip></InsideLine-DividingStrip>
     </div>
@@ -23,7 +24,9 @@ export default {
     },
     props:[
         "time",
-        "info"
+        "info",
+        "state",
+        "mode"
     ],
     watch:{
         time:{
@@ -39,6 +42,23 @@ export default {
             },
             immediate:true,
             deep:true
+        },
+        mode:{
+            handler(newVal,oldVal){
+                this.modeInfo = newVal
+            },
+            immediate:true,
+            deep:true
+        },
+        state:{
+            handler(newVal,oldVal){
+                if(newVal !== undefined){
+                    //this.enable = JSON.parse(newVal) ? 1 : 0
+                    this.$set(this,"enable",JSON.parse(newVal) ? 1 : 0)
+                }
+            },
+            immediate:true,
+            deep:true
         }
     },
     data(){
@@ -47,6 +67,7 @@ export default {
             loop:null,
             timeValue:this.time,
             timeInfo:this.info,
+            modeInfo:this.mode,
             enable:0,
         }
     },
@@ -67,9 +88,7 @@ export default {
         },
         setState(val){
             this.$set(this,"enable",val)
-        },
-        switchEvent(){
-            console.log("下发开关指令",this.enable)
+            this.$emit("checkSwitchEvent")
         }
     },
     mounted(){
@@ -100,17 +119,9 @@ export default {
 }
 .time{
     position: absolute;
-    // width: 160px;
-    // height: 50px;
-    // left: 30px;
-    // top: 25px;
-    // font-size: 50px;
-    // line-height: 50px;
-    // text-align: center;
-    background-color: cadetblue;
-    @include oneLineTextStyle_noColor(420px,50px,50px);
+    @include oneLineTextStyle_noColor(170px,50px,50px);
     top: 20px;
-    left: 20px;
+    left: 30px;
     text-align: left;
     transition: all 0.5s;
     -moz-transition: all 0.5s;	/* Firefox */
@@ -123,6 +134,17 @@ export default {
     text-align: left;
     left: 40px;
     bottom: 5px;
+    transition: all 0.5s;
+    -moz-transition: all 0.5s;	/* Firefox */
+    -webkit-transition: all 0.5s;	/* Safari 和 Chrome */
+    -o-transition: all 0.5s;	/* Opera */
+}
+.modeInfo{
+    position: absolute;
+    @include oneLineTextStyle_noColor(400px,60px,20px);
+    text-align: left;
+    left: 40px;
+    top: 55px;
     transition: all 0.5s;
     -moz-transition: all 0.5s;	/* Firefox */
     -webkit-transition: all 0.5s;	/* Safari 和 Chrome */

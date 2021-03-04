@@ -160,7 +160,6 @@ export default {
         })
         /**获取此设备的绑定关系 */
         HonYar.getlistBindingByDev(data.iotId,(res)=>{
-          console.log("此设备的绑定关系",res);
           if(JSON.parse(res).code == 200){
             _this.$store.dispatch("changeDate", {
               devBindingUserList : JSON.parse(res).data

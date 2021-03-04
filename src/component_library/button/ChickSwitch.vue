@@ -2,7 +2,7 @@
     <div class="ChickSwitch" :class="{'open':state == 1,'close':state == 0}" @click="change()">
         <!-- <img v-if="now_icon !== ''" class="RoundSwitch_icon"  :src="require('@/assets/images/icon/button/'+now_icon)" alt="按钮图标" > -->
         <div class="ChickSwithGuide" ref="ChickSwithGuide">
-            <div class="ChickSwithBlock" ref="ChickSwithBlock" :style="{left:(blockLeft === 0 ? '0px' : `${58*aspect_ratio}px`)}"></div>
+            <div class="ChickSwithBlock" ref="ChickSwithBlock" :style="{left:(state === 0 ? '0px' : `${58*aspect_ratio}px`)}"></div>
         </div>
     </div>
 </template>
@@ -21,7 +21,12 @@ export default {
     watch:{
         enable:{
             handler(newVal,oldVal){
-                this.state = newVal
+                if(newVal !== undefined){
+                    console.log("enable",newVal)
+                    this.state = Number(newVal)
+                    this.changeStyle()
+                }
+                
             },
             immediate:true,
             deep:true
@@ -32,37 +37,38 @@ export default {
             open:"",
             close:"",
             now_icon:"",
-            state:this.enable,
+            state:0,
             blockLeft:0,
             aspect_ratio:0,
             loop:null,
         }
     },
     methods:{
+        changeStyle(){
+            let _this = this;
+            console.log("改变",_this.state)
+             if(_this.state === 0){
+                _this.$nextTick(()=>{
+                    _this.$refs.ChickSwithGuide.style.backgroundColor = "#c5c5c5"
+                    _this.$refs.ChickSwithBlock.style.backgroundColor = "#FFFFFF"
+                    _this.$refs.ChickSwithGuide.style.boxShadow = `inset 0px 0px ${5*_this.aspect_ratio}px ${1*_this.aspect_ratio}px rgb(187, 187, 187)`
+                })
+            }else{
+                _this.$nextTick(()=>{
+                    _this.$refs.ChickSwithGuide.style.backgroundColor = "#83e4de"
+                    _this.$refs.ChickSwithBlock.style.backgroundColor = "#00d0ba"
+                    _this.$refs.ChickSwithGuide.style.boxShadow = `inset 0px 0px ${5*_this.aspect_ratio}px ${1*_this.aspect_ratio}px rgb(0, 208, 186)`
+                })
+            }
+        },
         change(){
             let _this = this;
-            // this.state == 0 ? this.state = 1 : this.state = 0;
-            // this.state == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open);
-
-            //console.log(_this.blockLeft)
-            _this.blockLeft === 0 ? _this.$set(this,"blockLeft",1) : _this.$set(this,"blockLeft",0);
-            if(_this.blockLeft === 0){
-                //_this.$refs.ChickSwithBlock.style.left = "0px";
-                _this.$refs.ChickSwithGuide.style.backgroundColor = "#c5c5c5"
-                _this.$refs.ChickSwithBlock.style.backgroundColor = "#FFFFFF"
-                _this.$refs.ChickSwithGuide.style.boxShadow = `inset 0px 0px ${5*_this.aspect_ratio}px ${1*_this.aspect_ratio}px rgb(187, 187, 187)`
-                _this.$emit("state",0)
-            }else{
-                //_this.$refs.ChickSwithBlock.style.left = "58px";
-                _this.$refs.ChickSwithGuide.style.backgroundColor = "#83e4de"
-                _this.$refs.ChickSwithBlock.style.backgroundColor = "#00d0ba"
-                _this.$refs.ChickSwithGuide.style.boxShadow = `inset 0px 0px ${5*_this.aspect_ratio}px ${1*_this.aspect_ratio}px rgb(0, 208, 186)`
-                _this.$emit("state",1)
-            }
+            _this.state === 0 ? _this.$set(this,"state",1) : _this.$set(this,"state",0);
+            _this.changeStyle()
             /**延时下发指令，避免用户频繁触发 */
             clearTimeout(_this.loop)
             _this.loop = setTimeout(()=>{
-                this.$emit("event",this.state)
+                this.$emit("event")
             },400)
         }
     },
