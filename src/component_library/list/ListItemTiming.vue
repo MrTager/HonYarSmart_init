@@ -1,5 +1,6 @@
 <template>
-    <div class="ListItemTiming" @touchstart="del_start" @touchmove="del_move" @touchend="del_end">
+<!-- @touchstart="del_start" @touchmove="del_move" @touchend="del_end" -->
+    <div class="ListItemTiming" ref="ListItemTiming" @touchstart="del_start" @touchmove="del_move" @touchend="del_end">
         <div class="time" :style="{color:enable === 0 ? 'rgba(191, 191, 191, 1)' : 'rgba(51, 51, 51, 1)'}">{{timeValue}}</div>
         <div class="modeInfo" :style="{color:enable === 0 ? 'rgba(191, 191, 191, 1)' : 'rgba(51, 51, 51, 1)'}">{{modeInfo}}</div>
         <div class="info" :style="{color:enable === 0 ? 'rgba(203, 203, 203, 1)' : 'rgba(102, 102, 102, 1)'}">{{timeInfo}}</div>
@@ -72,23 +73,27 @@ export default {
         }
     },
     methods:{
-        del_start(){
-            var _this = this;
-            clearTimeout(this.loop); 
-            this.loop = setTimeout(() => {
-                this.$emit("delete")
-            }, 600);
+        del_start(e){
+            let _this = this;
+            // _this.$nextTick(()=>{
+            //     _this.$refs.ListItemTiming.style.backgroundColor = 'rgba(211, 211, 211,0.5)'
+            // })
         },
-        del_move(){
-            clearTimeout(this.loop);
+        del_move(e){
+            let _this = this;
+            // _this.$nextTick(()=>{
+            //     _this.$refs.ListItemTiming.style.backgroundColor = 'rgba(255, 255, 255,1)'
+            // })
         },
-        del_end(){
-            var that = this;
-            clearTimeout(this.loop);
+        del_end(e){
+            let _this = this;
+            // _this.$nextTick(()=>{
+            //     _this.$refs.ListItemTiming.style.backgroundColor = 'rgba(255, 255, 255,1)'
+            // })
         },
         setState(val){
             this.$set(this,"enable",val)
-            this.$emit("checkSwitchEvent")
+            //this.$emit("checkSwitchEvent")
         }
     },
     mounted(){
@@ -116,6 +121,9 @@ export default {
     height: 150px;
     background-color: white;
     //border-bottom: 1px solid #ccc;
+}
+.ListItemTiming:active{
+    background-color: $buttonActiveColor;
 }
 .time{
     position: absolute;

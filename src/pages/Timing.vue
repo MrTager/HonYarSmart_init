@@ -6,7 +6,7 @@
         <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
           <div v-if="nullDataFlag" class="nullData"><span>无定时数据,请添加定时</span></div>
           <div v-if="nullDataFlag === false">
-            <List-Item-Timing :time="item.time" :info="item.content" :state="item.enable" :mode="item.mode" @delete="delClould(item.ruleId)" v-for="(item,i) in cloudList" :key="i" @checkSwitchEvent="changeCloudEnable(item.completeData)"></List-Item-Timing>
+            <List-Item-Timing ref="ListItemTiming" :time="item.time" :info="item.content" :state="item.enable" :mode="item.mode" @click.native="changeTimeListData(item.completeData)" v-for="(item,i) in cloudList" :key="i" @checkSwitchEvent="changeCloudEnable(item.completeData)"  @touchstart.native="timeListTouchStart(item.ruleId)" @touchmove.native="timeListTouchMove" @touchend.native="timeListTouchEnd"></List-Item-Timing>
           </div>
         </DropDown-Refresh>
       </Animation-Frame>
@@ -52,7 +52,10 @@ export default {
       startRefresh_flag:false,//下拉刷新开始刷新标识符
       titleName:'定时',
       headerType:'add',
+      cloudTimeTouchloop:null,//列表长按事件
       addTime_flag:false,
+      changeTime_flag:false,
+      now_ruleId:"",
       weekModal:false,
       actionModal:false,
       actionModal_data:{
@@ -376,7 +379,7 @@ export default {
       this.cloudDataInfo.time.min = String(min)
       this.createCron(this.cloudDataInfo.mode.arr)
     },
-   
+    //删除定时
     delClould(ruleId){
       let _this = this;
       HonYar.show_alert(
@@ -398,8 +401,97 @@ export default {
         }
       })
     },
-
+    //时间列表触摸事件
+    timeListTouchStart(ruleId){
+      let _this = this;
+      //_this.$refs.ListItemTiming.style.backgroundColor = 'rgba(211, 211, 211,0.5)'
+      clearTimeout(this.cloudTimeTouchloop); 
+      this.cloudTimeTouchloop = setTimeout(() => {
+        //alert(ruleId)
+        HonYar.show_alert(
+        true,
+        "删除定时",
+        "info",
+        "确认要删除这条定时吗？",
+        "取消",
+        "确定",
+      ).then((res) => {
+        if (JSON.parse(res).data.inputData == "confirm") {
+          HonYar.show_Loading("删除中...")
+          HonYar.getServer("/appScene/deleteTiming", { "ruleId": ruleId },(res2)=>{
+            if(JSON.parse(res2).code === 200){
+            HonYar.show_toast("定时删除成功")
+            _this.refreshCloudList();
+            }
+          })
+        }
+      })
+      }, 600);
    
+    },
+    timeListTouchMove(e){
+      clearTimeout(this.cloudTimeTouchloop); 
+    },
+    timeListTouchEnd(e){
+      clearTimeout(this.cloudTimeTouchloop); 
+    },
+   
+    changeTimeListData(completeData){
+      let _this = this;
+      let data =  completeData
+      console.log("completeData",data)
+      let time = {};
+      let mode = {};
+      let action = {};
+      let dataTime = _this.cloudDataInfo.time
+      let dataMode = _this.cloudDataInfo.mode.arr
+      let dataAction = _this.cloudDataInfo.action.arr
+      console.log("dataAction",dataAction)
+      let exist_cron = data.triggers.items[0].params.cron.split(" ");
+      let exist_actions = data.actions;
+      console.log("exist_cron",exist_cron)
+      _this.$set(_this.cloudDataInfo.time,'hour',exist_cron[2]);
+      _this.$set(_this.cloudDataInfo.time,'min',exist_cron[1])
+      //无重复情况下
+      if (exist_cron[5] === "?") {
+        //仅一次
+        dataMode.map((item)=>{
+          if(item.index === 0){
+            item.flag = true
+          }else{
+            item.flag = false
+          }
+        })
+      }else{
+        //重复
+        let week = exist_cron[5];
+        let weekArr = week.split(',')
+        console.log(weekArr)
+        dataMode.map(item => {
+          weekArr.forEach(item2 => {
+            if(item.index === Number(item2)){
+              item.flag = true
+            }
+          })
+        })
+      }
+      _this.$set(_this.cloudDataInfo.mode,'arr',dataMode)
+      dataAction.map(item => {
+        exist_actions.forEach(item2 => {
+          if(item2.params.propertyName === item.identifier){
+            item.value = item2.params.appShow.content;
+            item.enable = 1;
+            item.actionProp = String(item2.params.propertyValue);
+            item.type = item2.params.propertyValue
+          }
+        })
+      })
+      _this.$set(_this.cloudDataInfo.action,'arr',dataAction)
+
+      _this.addCloudTime()
+
+    },
+
 
 
 
@@ -466,15 +558,29 @@ export default {
       })
       setData.actions = actionArr;
       if(isAction){
-        HonYar.show_Loading("设置中...")
-        HonYar.getServer("/appScene/addTiming",setData,(res)=>{
-          if(JSON.parse(res).code === 200){
-            _this.refreshCloudList()
-            _this.backInit()
-          }else{
-            HonYar.show_toast(res)
-          }
-        })
+        if(_this.changeTime_flag){
+          HonYar.show_Loading("设置中...")
+          HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
+            if(JSON.parse(res).code === 200){
+              _this.refreshCloudList()
+              _this.backInit()
+            }else{
+              HonYar.show_toast(res)
+            }
+          })
+        }
+        if(_this.addTime_flag){
+          HonYar.show_Loading("设置中...")
+          HonYar.getServer("/appScene/addTiming",setData,(res)=>{
+            if(JSON.parse(res).code === 200){
+              _this.refreshCloudList()
+              _this.backInit()
+            }else{
+              HonYar.show_toast(res)
+            }
+          })
+        }
+        
       }else{
         HonYar.show_toast("至少选择一个动作")
       }
@@ -531,6 +637,7 @@ export default {
     addCloudTime(){
       let _this = this;
       this.$set(this,"addTime_flag",true)
+      this.$set(this,"changeTime_flag",false)
       this.$set(this,"titleName",'添加定时')
       this.$set(this,"headerType",'save')
           //备份初始状态
@@ -539,7 +646,43 @@ export default {
 
     //切换云端定时使能按钮
     changeCloudEnable(data){
-      console.log("全部数据",data)
+      let _this = this;
+      let setData = data;
+      console.log("changeCloudEnable",setData)
+      let enable = !setData.enable;//需要下发的enable
+      setData.enable = enable
+      //创建新的cron
+      let exist_cron = setData.triggers.items[0].params.cron.split(" ");
+      //无重复情况下
+      if (exist_cron[5] === "?") {
+        //重新生成时间
+        let today = new Date();
+        let cron_day = parseInt(exist_cron[3]) + parseInt(exist_cron[4]) * 100 + parseInt(exist_cron[6]) * 10000;
+        let now_day = today.getDate() + (today.getMonth() + 1) * 100 + today.getFullYear() * 10000;
+        if (now_day > cron_day) {
+            exist_cron[3] = today.getDate();
+            exist_cron[4] = today.getMonth() + 1;
+            exist_cron[6] = today.getFullYear();
+        } else {
+          let   cron_time = parseInt(exist_cron[1]) + parseInt(exist_cron[2]) * 100;
+          let   now_time = today.getMinutes() + today.getHours() * 100;
+          if (now_time > cron_time) {
+              exist_cron[3] = today.getDate() + 1;
+              exist_cron[4] = today.getMonth() + 1;
+              exist_cron[6] = today.getFullYear();
+          }
+        }
+        setData.triggers.items[0].params.cron = exist_cron.join(" ");
+        HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
+          _this.refreshCloudList();
+        })
+      }else{
+        HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
+          _this.refreshCloudList();
+        })
+      }
+      
+
     },
 
 
@@ -547,6 +690,7 @@ export default {
       let _this = this;
       _this.cloudDataInfo = JSON.parse(JSON.stringify(_this.cloudDataInfo_backup))
       _this.$set(this,"addTime_flag",false)
+      _this.$set(this,"changeTime_flag",false)
       _this.$set(this,"titleName",'定时')
       _this.$set(this,"headerType",'add')
     },
