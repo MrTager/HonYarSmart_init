@@ -22,7 +22,7 @@ export default {
         enable:{
             handler(newVal,oldVal){
                 if(newVal !== undefined){
-                    console.log("enable",newVal)
+                    console.log("子开关enable",newVal)
                     this.state = Number(newVal)
                     this.changeStyle()
                 }
@@ -46,7 +46,6 @@ export default {
     methods:{
         changeStyle(){
             let _this = this;
-            console.log("改变",_this.state)
              if(_this.state === 0){
                 _this.$nextTick(()=>{
                     _this.$refs.ChickSwithGuide.style.backgroundColor = "#c5c5c5"
@@ -63,6 +62,7 @@ export default {
         },
         change(){
             let _this = this;
+             window.event.stopPropagation();
             _this.state === 0 ? _this.$set(this,"state",1) : _this.$set(this,"state",0);
             _this.changeStyle()
             /**延时下发指令，避免用户频繁触发 */

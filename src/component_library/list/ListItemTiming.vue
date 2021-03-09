@@ -92,8 +92,8 @@ export default {
             // })
         },
         setState(val){
-            this.$set(this,"enable",val)
-            //this.$emit("checkSwitchEvent")
+            //this.$set(this,"enable")
+            this.$emit("checkSwitchEvent")
         }
     },
     mounted(){

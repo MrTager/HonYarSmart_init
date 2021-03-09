@@ -5,16 +5,16 @@
       <div class="online" v-if="dev_props.online">
         <!-- <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
         </DropDown-Refresh> -->
+        <div class="topClear"></div>
         <List-Modal v-if="flag.showChangeNameModel" title="编辑昵称" @confirm="changeNameConfirm" @cancel="changeNameCancel">
           <List-Item-Input v-for="(value,key,index) in dev_props.childPropName" :key="index" :title="value.propName" :placeholder="value.nickName"  @input="changePropName(key,$event)"></List-Item-Input>
         </List-Modal>
-        <div class="topClear"></div>
-        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=true @rightOptionEvent="deviceAdmin && homeAdmin ? changeNickname(true) : changeNickname(false)">
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=true @rightOptionEvent="superAdmin ? changeNickname(true) : changeNickname(false)">
           <ul class="switchGroup">
             <li>
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
             </li>
-            <li v-if="switchType === 2 || 3">
+            <li v-if="switchType === 2 || switchType === 3">
               <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_2"  :state="dev_props.powerstate_2" @event="changeSwitch($event,'powerstate_2')"></Round-Botton-Frame>
             </li>
             <li v-if="switchType === 3">
@@ -49,9 +49,11 @@
           </ul>
         </Module-Frame>
         <Inside-Line-Dividing-Strip></Inside-Line-Dividing-Strip>
-        <Module-Frame titleName="定时设置" titleImg="title_switch.png" type="noIcon">
-          <List-Item type="imgItem" iconName="Cloud" title="云端定时" arrow @event="timing"></List-Item>
-        </Module-Frame>
+        <div v-if="superAdmin">
+          <Module-Frame titleName="定时设置" titleImg="title_switch.png" type="noIcon">
+            <List-Item type="imgItem" iconName="Cloud" title="云端定时" arrow @event="timing"></List-Item>
+          </Module-Frame>
+        </div>
       </div>
       <div class="offline" v-else>
         <Off-Line></Off-Line>
@@ -138,6 +140,13 @@ export default {
         return state.pubilc.attribute.homeAdmin
       }
     }),
+    superAdmin(){
+      if(this.deviceAdmin && this.homeAdmin){
+        return true
+      }else{
+        return false
+      }
+    }
    },
   methods: {
     /*********************************porivate function****************************************************** */
@@ -163,7 +172,7 @@ export default {
       let obj = {}
       let nameArr = ["powerstate_1","powerstate_2","powerstate_3"]
       const propArr = this.deviceChildProps
-      propArr.map(item => {
+      propArr.forEach(item => {
         for(let i = 0;i<nameArr.length;i++){
           if(nameArr[i] === item.identifier){
             obj[item.identifier] = new Object();
@@ -174,13 +183,29 @@ export default {
         }
       })
       //调整顺序
-      let obj2 = {
-        powerstate_1:"",
-        powerstate_2:"",
-        powerstate_3:""
+
+      let powerStateArr = [];
+      for(let key in obj){
+        let obj1 = new Object()
+        obj1[key] = obj[key]
+        powerStateArr.push(obj1)
       }
-      let obj3 = Object.assign(obj2,obj)
-      _this.$set(_this.dev_props,"childPropName",obj3)
+      powerStateArr.sort((item1,item2) => {
+        let str = ""
+        let str2 = ""
+        for(let key2 in item1){
+          str = key2.slice(11,12);
+        }
+        for(let key3 in item2){
+          str2 = key3.slice(11,12);
+        }
+        return Number(str) - Number(str2)
+      })
+      let finalObject = new Object();
+      powerStateArr.forEach(iten => {
+        finalObject = Object.assign(finalObject,iten)
+      })
+      _this.$set(_this.dev_props,"childPropName",finalObject)
     },
     //change nickname
     changeNickname(flag){
@@ -375,7 +400,7 @@ export default {
 //comment css
 .main {
   width: 100%;
-  height: 100%;
+  height:calc(100% - 80px);
 }
 .offline{
   position: relative;
@@ -386,20 +411,21 @@ export default {
 .online{
   position: relative;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 80px);
   //top: 80px;
 }
 //=========================================================== */
 //private css
 .topClear{
   width: 100%;
-  height: 40px;
-  margin-top: 80px;
+  height: 120px;
 }
 .switchGroup{
   width: 100%;
   height: 300px;
+  display: flex;
   li{
+    margin: 0 auto;
     width: 1/3*100%;
     height: 100%;
     float: left;

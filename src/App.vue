@@ -123,7 +123,7 @@ export default {
     HonYar.getDeviceInfo('','1','',(res)=>{
       if(JSON.parse(res).code == 200){
         let data = JSON.parse(res).data
-        if(data.owned === 1 || "1"){
+        if(data.owned == 1){
           _this.$store.dispatch("changeDate", {
               deviceAdmin : true
           });
@@ -198,7 +198,7 @@ export default {
      HonYar.getHomeInfo("/appHome/getHomeInfo","",(res)=>{
       if(JSON.parse(res).code == 200){
         let _homeInfo = JSON.parse(res).data
-        if(_homeInfo.parent === 1 || "1"){
+        if(_homeInfo.parent == 1){
           _this.$store.dispatch("changeDate", {
               homeAdmin : true
           });

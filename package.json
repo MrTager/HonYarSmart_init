@@ -1,7 +1,7 @@
 {
-  "name": "temperature-and-humidity-sensor",
+  "name": "switch_base_on_tuya_version",
   "version": "1.0.0",
-  "description": "temperature and humidity sensor H5 control panel of smart home",
+  "description": "switch base on tuya version`s H5 control panel of smart home",
   "author": "mrtager",
   "private": false,
   "scripts": {

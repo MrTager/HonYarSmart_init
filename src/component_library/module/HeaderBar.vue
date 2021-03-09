@@ -2,7 +2,7 @@
     <div class="HeaderBar">
         <img class="back" src="@/assets/images/icon/header/back.png" alt="后退" @click="back()">
         <div class="title">{{titleName}}</div>
-        <img v-if="type === 'add'" class="rightImg" :src="require(`../../assets/images/icon/header/${icon}.png`)"  @click="event()">
+        <img v-if="type === 'add' || type === 'more'" class="rightImg" :src="require(`../../assets/images/icon/header/${icon}.png`)"  @click="event()">
         <div v-if="type === 'save'" class="textOptionValue" @click="textOptionEvent">{{textOption}}</div>
     </div>
 </template>

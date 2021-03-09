@@ -2,7 +2,7 @@
   <div class="Timing" ref="container" @touchstart="container_touchstart" @touchmove="container_touchmove" @touchend="container_touchend">
       <Header-Bar @back="back()" :titleName="titleName" :type="headerType" icon="add" @textOptionEvent="saveCloudTime" @event="addCloudTime"></Header-Bar>
       <Blank-Dividing-Strip></Blank-Dividing-Strip>
-      <Animation-Frame v-if="addTime_flag === false">
+      <Animation-Frame v-if="showExitPage === false">
         <DropDown-Refresh :on-refresh="action_Refresh" :startRefresh_flag="startRefresh_flag">
           <div v-if="nullDataFlag" class="nullData"><span>无定时数据,请添加定时</span></div>
           <div v-if="nullDataFlag === false">
@@ -10,18 +10,22 @@
           </div>
         </DropDown-Refresh>
       </Animation-Frame>
-      <Animation-Frame v-if="addTime_flag">
+      <Animation-Frame v-if="showExitPage">
         <Select-Panel setTypes="1" :chooseCloudHour="cloudDataInfo.time.hour" :chooseCloudMin="cloudDataInfo.time.min" @selectTimeHour="selectTimeHour_cloud" @selectTimeMin="selectTimeMin_cloud"></Select-Panel>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
         <List-Item type="normal" :title="timeModeTitleValue.title" :value="timeModeTitleValue.value" @click.native="chooseWeek"></List-Item>
         <Gray-Dividing-Strip></Gray-Dividing-Strip>
-        <List-Item :type="propActionListType" v-for="(item,i) in cloudDataInfo.action.arr" :key="i" :title="item.propName" :value="item.value" :enable="item.enable"  @event="chooseAction(i)" @enableEvent="propActionEnable(i, arguments)"></List-Item>
+        <div v-if="cloudDataInfo.action.arr.length > 0">
+          <List-Item :type="propActionListType" v-for="(item,i) in cloudDataInfo.action.arr" :key="i" :title="item.propName" :value="item.value" :enable="item.enable"  @event="chooseAction(i)" @enableEvent="propActionEnable(i, arguments)"></List-Item>
+        </div>
         <List-Modal v-show="weekModal" @cancel="weekModalCancel" @confirm="weekModalConfirm">
           <List-Item-Chick v-for="(item,i) in cloudDataInfo.mode.arr_backup" :key="i" :title="item.name" :state="item.flag" @event="changeWeek(i,item.flag)"></List-Item-Chick>
         </List-Modal>
-        <List-Modal v-show="actionModal" @cancel="actionModalCancel" @confirm="actionModalConfirm">
+        <div v-if="cloudDataInfo.action.arr.length > 0">
+          <List-Modal v-show="actionModal" @cancel="actionModalCancel" @confirm="actionModalConfirm">
           <List-Item-Value v-for="(item,i) in cloudDataInfo.action.arr[nowChooseActionIndex].action" :key="i" :state="cloudDataInfo.action.arr[nowChooseActionIndex].actionProp === item.prop ? true : false" :value="item.value" @click.native="changeAction(nowChooseActionIndex,i,item)"></List-Item-Value>
         </List-Modal>
+        </div>
       </Animation-Frame>
   </div>
 </template>
@@ -51,13 +55,15 @@ export default {
     return {
       startRefresh_flag:false,//下拉刷新开始刷新标识符
       titleName:'定时',
-      headerType:'add',
+      headerType:'add', //add save
       cloudTimeTouchloop:null,//列表长按事件
-      addTime_flag:false,
-      changeTime_flag:false,
+      showExitPage:false,//是否显示定时编辑页面
+      addTime_flag:false, //是否是增加定时
+      changeTime_flag:false, //是否是修改定时
       now_ruleId:"",
       weekModal:false,
       actionModal:false,
+      changeCloudData_temporaryData:{},//临时保存要修改的数据
       actionModal_data:{
         arr:[
           {propName:'开关一',enable:0,flag:true,value:['开启','关闭']},
@@ -125,11 +131,11 @@ export default {
             "params":{
               "iotId":"", //设备IOTID
               "appShow":{
-                  "content":" 关闭" //未生成
+                  "content":"" 
               },
-              "propertyName":"S2", //开关属性名 未获取
+              "propertyName":"", //开关属性名
               "propertyValue":0,
-              "productKey":"a1EEiVZcMd9", //pk 未获取
+              "productKey":"", //pk 
               "deviceName":"" //设备DN选填
             },
             "url":"action/device/setProperty"
@@ -256,12 +262,12 @@ export default {
         }else{
           cron = "0 " + _this.transitionTime(_this.cloudDataInfo.time.min) + " " + _this.transitionTime(_this.cloudDataInfo.time.hour) + " " + HonYar.getTime().nextday + " " + (Number(HonYar.getTime().nextmonth)+ 1)+ " ? " + HonYar.getTime().nextyear
         }
-        showTimeContent = _this.transitionTime(_this.cloudDataInfo.time.hour) + " : " + _this.transitionTime(_this.cloudDataInfo.time.min) + "仅一次"
+        showTimeContent = _this.transitionTime(Number(_this.cloudDataInfo.time.hour)) + " : " + _this.transitionTime(Number(_this.cloudDataInfo.time.min)) + "仅一次"
       }else{
         let weekArrStr = weekArr.join(",");
         let weekNameArrStr = weekNameArr.join(" ");
         cron = "0 " + _this.transitionTime(_this.cloudDataInfo.time.min) + " " + _this.transitionTime(_this.cloudDataInfo.time.hour) + " ? * " + weekArrStr + " *"
-        showTimeContent = _this.transitionTime(_this.cloudDataInfo.time.hour) + " : " + _this.transitionTime(_this.cloudDataInfo.time.min) + "重复" + weekNameArrStr
+        showTimeContent = _this.transitionTime(Number(_this.cloudDataInfo.time.hour)) + " : " + _this.transitionTime(Number(_this.cloudDataInfo.time.min)) + "重复" + weekNameArrStr
       }
       _this.cloudDataInfoSave.triggers.items[0].params.cron = cron
       _this.cloudDataInfoSave.triggers.items[0].params.appShow.content = showTimeContent
@@ -296,6 +302,7 @@ export default {
     },
     //生成UI层需要渲染饿格式
     createUIActiveArr(data){
+      let _this = this;
       // arr:[
       //       {propName:'开关一',enable:false,value:"打开",action:[{"prop":'1',"value":"打开"}]}
       //     ]
@@ -303,12 +310,17 @@ export default {
       let arr = [];
       const simplifyAbilityDTOs = newData.simplifyAbilityDTOs
       const properties = newData.abilityDsl.properties
-      console.log("信息",simplifyAbilityDTOs,properties)
       simplifyAbilityDTOs.forEach((value,index) => {
         let obj = new Object();
-        obj["propName"] = value.name
+        const propArr = _this.deviceChildProps
+        propArr.forEach(item2 => {
+          if(value.identifier === item2.identifier){
+            obj["propName"] = item2.nickName === "" ?  item2.name : item2.nickName
+          }
+        })
+        
         obj["identifier"] = value.identifier
-        obj["enable"] = false;
+        obj["enable"] = 0;
         obj["action"] = [];
         obj["type"] = value.type
         obj["actionProp"] = "0"; //当前动作选中prop
@@ -329,8 +341,11 @@ export default {
         }
         arr.push(obj)
       });
-      // this.cloudDataInfo.action.arr = arr
+      if(arr.length === 1){
+        arr[0].enable = 1
+      }
       this.$set(this.cloudDataInfo.action,"arr",arr)
+      this.$set(this.cloudDataInfo.action,"arr_backup",arr)
     },
     //action enable事件
     propActionEnable(){
@@ -407,8 +422,8 @@ export default {
       //_this.$refs.ListItemTiming.style.backgroundColor = 'rgba(211, 211, 211,0.5)'
       clearTimeout(this.cloudTimeTouchloop); 
       this.cloudTimeTouchloop = setTimeout(() => {
-        //alert(ruleId)
-        HonYar.show_alert(
+      //alert(ruleId)
+      HonYar.show_alert(
         true,
         "删除定时",
         "info",
@@ -439,17 +454,15 @@ export default {
     changeTimeListData(completeData){
       let _this = this;
       let data =  completeData
-      console.log("completeData",data)
+      _this.$set(_this,"changeCloudData_temporaryData",completeData)
       let time = {};
       let mode = {};
       let action = {};
       let dataTime = _this.cloudDataInfo.time
       let dataMode = _this.cloudDataInfo.mode.arr
       let dataAction = _this.cloudDataInfo.action.arr
-      console.log("dataAction",dataAction)
       let exist_cron = data.triggers.items[0].params.cron.split(" ");
       let exist_actions = data.actions;
-      console.log("exist_cron",exist_cron)
       _this.$set(_this.cloudDataInfo.time,'hour',exist_cron[2]);
       _this.$set(_this.cloudDataInfo.time,'min',exist_cron[1])
       //无重复情况下
@@ -466,8 +479,8 @@ export default {
         //重复
         let week = exist_cron[5];
         let weekArr = week.split(',')
-        console.log(weekArr)
         dataMode.map(item => {
+          item.flag = false
           weekArr.forEach(item2 => {
             if(item.index === Number(item2)){
               item.flag = true
@@ -477,22 +490,51 @@ export default {
       }
       _this.$set(_this.cloudDataInfo.mode,'arr',dataMode)
       dataAction.map(item => {
-        exist_actions.forEach(item2 => {
-          if(item2.params.propertyName === item.identifier){
-            item.value = item2.params.appShow.content;
-            item.enable = 1;
-            item.actionProp = String(item2.params.propertyValue);
-            item.type = item2.params.propertyValue
-          }
-        })
+        item.enable = 0;
+        try {
+          exist_actions.forEach(item2 => {
+            if(item2.params.propertyName === item.identifier){
+              item.value = item2.params.appShow.content;
+              item.enable = 1;
+              item.actionProp = String(item2.params.propertyValue);
+              item.type = item2.params.propertyValue
+              throw Error();
+            }
+          })
+        }catch (e) {
+
+        }
+        
       })
       _this.$set(_this.cloudDataInfo.action,'arr',dataAction)
-
-      _this.addCloudTime()
-
+      _this.Exit_Add_CloudTime_Func("change")
+      // _this.$set(_this,"changeTime_flag",true)
+    },
+    /**
+     * 
+     * type 为类型 change add
+     */
+    Exit_Add_CloudTime_Func(type){
+      let _this = this;
+      //this.showExitPage = true;
+      this.$set(this,"showExitPage",true)
+      if(type === "change"){
+        this.$set(this,"addTime_flag",false)
+        this.$set(this,"changeTime_flag",true)
+      }else if(type === "add"){
+        this.$set(this,"addTime_flag",true)
+        this.$set(this,"changeTime_flag",false)
+      }
+      this.$set(this,"titleName",'添加定时')
+      this.$set(this,"headerType",'save')
+          //备份初始状态
+      _this.cloudDataInfo_backup = JSON.parse(JSON.stringify(_this.cloudDataInfo))
     },
 
-
+    addCloudTime(){
+      let _this = this;
+      _this.Exit_Add_CloudTime_Func("add")
+    },
 
 
     weekModalCancel(){
@@ -501,7 +543,12 @@ export default {
     weekModalConfirm(){
       this.weekModal = !this.weekModal
       this.cloudDataInfo.mode.arr = this.cloudDataInfo.mode.arr_backup
-      this.initCloudDataInfo()
+      let _this = this;
+      _this.cloudDataInfoSave.gatewayIotId = _this.deviceInfo.iotId
+      // _this.cloudDataInfo.time.hour = _this.cloudSelectTime.hour
+      // _this.cloudDataInfo.time.min = _this.cloudSelectTime.min
+      //初始化cron
+      _this.createCron(_this.cloudDataInfo.mode.arr)
     }, 
     chooseWeek(){
       this.weekModal = !this.weekModal
@@ -536,11 +583,9 @@ export default {
       let newData = _this.cloudDataInfo;
       let setData = _this.cloudDataInfoSave;
       //遍历action 形成要下发的json数据
-      console.log("newData",newData)
       let actionArr = [];
-      let isAction=false;//action是否为空
+      let isAction = false;//action是否为空
       newData.action.arr.forEach((item)=>{
-        console.log("item",item)
         if(item.enable === 1){
           isAction = true
           let obj = new Object();
@@ -557,9 +602,16 @@ export default {
         }
       })
       setData.actions = actionArr;
+
+      
       if(isAction){
         if(_this.changeTime_flag){
           HonYar.show_Loading("设置中...")
+          setData["delete"] = _this.changeCloudData_temporaryData.delete
+          setData["order"] = 0
+          setData["ruleId"] = _this.changeCloudData_temporaryData.ruleId
+          setData["sceneId"] = _this.changeCloudData_temporaryData.sceneId
+          setData["type"] = _this.changeCloudData_temporaryData.type
           HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
             if(JSON.parse(res).code === 200){
               _this.refreshCloudList()
@@ -568,6 +620,7 @@ export default {
               HonYar.show_toast(res)
             }
           })
+          return
         }
         if(_this.addTime_flag){
           HonYar.show_Loading("设置中...")
@@ -579,6 +632,7 @@ export default {
               HonYar.show_toast(res)
             }
           })
+          return
         }
         
       }else{
@@ -588,28 +642,44 @@ export default {
     },
     refreshCloudList(){
       let _this = this;
-      HonYar.getServer("/appScene/getTimings", {"gatewayIotId": _this.deviceInfo.iotId},(res)=>{
-        console.log("获取到的列表",JSON.parse(res))
-      _this.$store.dispatch("changeDate",{
-        cloudTimeList:JSON.parse(res).data
-      }).then(res => {
-        //渲染列表
-        _this.loadCloudTimeList()
-        HonYar.stop_Loading();
-      })
-    })
+    //   HonYar.getServer("/appScene/getTimings", {"gatewayIotId": _this.deviceInfo.iotId},(res)=>{
+    //   _this.$store.dispatch("changeDate",{
+    //     cloudTimeList:JSON.parse(res).data
+    //   }).then(res => {
+    //     //渲染列表
+    //     _this.loadCloudTimeList()
+    //     HonYar.stop_Loading();
+    //   })
+    // })
+
+      HonYar.getCloudTiming(_this.deviceInfo.iotId)
+        .then(res => {
+          HonYar.stop_Loading();
+          let list = JSON.parse(res).data
+          _this.$store.dispatch("changeDate",{
+            cloudTimeList:list
+          }).then(res => {
+            _this.$set(_this,"timeList",list)
+          })
+          HonYar.getServer("/appScene/getTimings", {"gatewayIotId": _this.deviceInfo.iotId},(res)=>{
+            _this.$store.dispatch("changeDate",{
+              cloudTimeList:JSON.parse(res).data
+            }).then(res => {
+              //渲染列表
+              _this.loadCloudTimeList()
+            })
+          })
+        })
 
     },
 
     loadCloudTimeList(){
       let _this = this;
       let list = _this.cloudTimeList
-      console.log("list",list)
       let showArr = [];
       list.forEach(item => {
         let listItem = item;
         let obj = new Object();
-        console.log("是啊集",listItem.triggers.items[0].params.appShow.content)
         obj["time"] = listItem.triggers.items[0].params.appShow.content.slice(0,7)
         obj["mode"] = listItem.triggers.items[0].params.appShow.content.slice(7)
         obj["ruleId"] = listItem.ruleId
@@ -634,21 +704,13 @@ export default {
     },
 
 
-    addCloudTime(){
-      let _this = this;
-      this.$set(this,"addTime_flag",true)
-      this.$set(this,"changeTime_flag",false)
-      this.$set(this,"titleName",'添加定时')
-      this.$set(this,"headerType",'save')
-          //备份初始状态
-      _this.cloudDataInfo_backup = JSON.parse(JSON.stringify(_this.cloudDataInfo))
-    },
+
 
     //切换云端定时使能按钮
     changeCloudEnable(data){
       let _this = this;
+      HonYar.show_Loading("设置中...")
       let setData = data;
-      console.log("changeCloudEnable",setData)
       let enable = !setData.enable;//需要下发的enable
       setData.enable = enable
       //创建新的cron
@@ -673,12 +735,15 @@ export default {
           }
         }
         setData.triggers.items[0].params.cron = exist_cron.join(" ");
+
         HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
           _this.refreshCloudList();
+          HonYar.stop_Loading()
         })
       }else{
         HonYar.getServer("/appScene/updateTiming",setData,(res)=>{
           _this.refreshCloudList();
+          HonYar.stop_Loading()
         })
       }
       
@@ -688,15 +753,20 @@ export default {
 
     backInit(){
       let _this = this;
+      HonYar.show_Loading("加载中...")
       _this.cloudDataInfo = JSON.parse(JSON.stringify(_this.cloudDataInfo_backup))
-      _this.$set(this,"addTime_flag",false)
-      _this.$set(this,"changeTime_flag",false)
+      _this.createActionArray();
+      _this.$set(this,"showExitPage",false)
+      // _this.$set(this,"addTime_flag",false)
+      // _this.$set(this,"changeTime_flag",false)
       _this.$set(this,"titleName",'定时')
       _this.$set(this,"headerType",'add')
+      _this.changeCloudData_temporaryData = {}
+      HonYar.stop_Loading()
     },
     back(){
       let _this = this;
-      if(this.addTime_flag){
+      if(this.showExitPage){
           HonYar.show_alert(
               true,
               "解绑",
@@ -709,10 +779,6 @@ export default {
                 _this.backInit()
               }
             })
-        
-        
-         
-        
       }else{
         this.$router.replace({ path: "/" });
       }
@@ -724,7 +790,6 @@ export default {
     },
     container_touchstart(e) {
       e = event || window.event;
-      
       if (this.$refs.container.scrollTop == 0) {
         this.startRefresh_flag = true;
       } else {
@@ -743,10 +808,47 @@ export default {
     container_touchend(e){
 
     },
+     /**********************************************************监听上报********************************************************** */
+    monitor_report() {
+      let _this = this;
+      this.$bridge.registerHandler("nativeSignal", (data, responseCallback) => {
+        //console.log("上报1", JSON.parse(data));
+        let _data = JSON.parse(data);
+        //监听返回键
+        if(_data.request.signalType){
+          if(_data.request.signalType == 'back'){
+            
+          }
+        }
+        this.$store.dispatch("updateNativeSignal", data);
+        responseCallback('{"errCode": 0}'); // 回复给Native,data为回复数据
+      });
+      this.$bridge.registerHandler("subAllEvent", (data, responseCallback) => {
+        //console.log("上报2", data);
+        let _data = JSON.parse(data);
+        //监听返回键
+        if(_data.request){
+          if(_data.request.signalType){
+            if(_data.request.signalType == 'back'){
+            }
+          }
+        }
+        this.processing_reported_data(JSON.parse(data));
+        this.$store.dispatch("updateEvent", data);
+        responseCallback('{"errCode": 0}'); // 回复给Native,data为回复数据
+      });
+    },
+    /**处理上报数据 */
+    processing_reported_data(res) {
+      let _this = this;
+      if(res.iotId === _this.deviceInfo.iotId){
+        this.refreshCloudList();
+      }
+    },
   },
-  activated() {},
   mounted() {
     let _this = this;
+    this.monitor_report();
     HonYar.show_Loading();
     let waitTimeList = setInterval(() => {
       if(JSON.stringify(_this.deviceInfo) !== '{}'){
@@ -788,16 +890,21 @@ export default {
 
 .Timing{
   width: 100%;
-  height: calc(100% - 200px);
+  // height: 100%;
+  min-height: 100%;
 }
 .nullData{
-  position: relative;
+  // position: relative;
   width: 100%;
-  height: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  padding-top: 200px;
   span{
-    position: absolute;
-    left: 25%;
-    top: 40%;
+    //position: absolute;
+    // left: 25%;
+    // top: 40%;
     @include oneLineTextStyle(50%,40px,35px,rgba(182,182,182,0.5))
   }
 }
