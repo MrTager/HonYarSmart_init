@@ -4,7 +4,7 @@
             <img v-if="now_icon !== ''" class="SquareSwitch_icon"  :src="require('@/assets/images/icon/button/'+now_icon)" alt="按钮图标" >
             <div class="state_value" :class="{'open_text':state == 1,'close_text':state == 0}">{{state_value}}</div>
         </div>
-        <div class="RectangleSwitch" :class="{'open':state == 1,'close':state == 0}"  v-else @click="change()">
+        <div class="RectangleSwitch" :class="{'open':state == 1,'close':state == 0}"  v-if="show == 1" @click="change()">
             <img v-if="now_icon !== ''" class="icon"  :src="require('@/assets/images/icon/button/'+now_icon)" alt="按钮图标" >
             <div class="state_value" :class="{'open_text':state == 1,'close_text':state == 0}">{{state_value}}</div>
         </div>
@@ -20,8 +20,21 @@ export default {
     name:"RectangularSwitch",
     props:[
         "type",
-        "category"
+        "category",
+        "openIcon",
+        "closeIcon",
+        "enable"
     ],
+    watch:{
+        enable:{
+            handler(oldVal,newVal){
+                if(oldVal !== undefined){
+                    this.state = Number(oldVal)
+                    this.changeStyle()
+                }
+            }
+        }
+    },
     data(){
         return {
             open:"",
@@ -33,9 +46,13 @@ export default {
         }
     },
     methods:{
-        change(){
-            this.state == 0 ? this.state = 1 : this.state = 0;
+        changeStyle(){
             this.state == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open)
+            this.state == 0 ? this.$set(this,"state_value","关闭") : this.$set(this,"state_value","打开")
+        },
+        change(){
+            // this.state == 0 ? this.state = 1 : this.state = 0;
+            
         }
     },
     mounted(){
@@ -47,6 +64,11 @@ export default {
                 this.open = "child_lock_white.png";
                 this.close = "child_lock_black.png";
                 this.now_icon = "child_lock_black.png";
+                break;
+            case "RectangleSwitch":
+                this.open = this.openIcon
+                this.close = this.closeIcon;
+                this.now_icon = this.closeIcon;
                 break;
         }
         if(this.category == "Square"){
@@ -98,6 +120,9 @@ div,span {
         text-align: center;
         pointer-events: none;
     }
+}
+.RectangleSwitch:active{
+    background-color: $buttonActiveColor;
 }
 .RectangleSwitch{
     position: relative;

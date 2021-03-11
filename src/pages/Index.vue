@@ -9,6 +9,32 @@
         <List-Modal v-if="flag.showChangeNameModel" title="编辑昵称" @confirm="changeNameConfirm" @cancel="changeNameCancel">
           <List-Item-Input v-for="(value,key,index) in dev_props.childPropName" :key="index" :title="value.propName" :placeholder="value.nickName"  @input="changePropName(key,$event)"></List-Item-Input>
         </List-Modal>
+        <div class="topSwitchGroup">
+          <div class="leftGroup">
+            <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=false>
+              <div class="leftSwitch">
+                <div class="switch">
+                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(1,'indicator')" title="全开" ></Round-Edges-Transverse-Rectangle>
+                </div>
+                <div class="switch">
+                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(1,'indicator')" title="全关" ></Round-Edges-Transverse-Rectangle>
+                </div>
+              </div>
+            </Module-Frame>
+          </div>
+          <div class="rightGroup">
+            <Module-Frame titleName="开关类型" titleImg="title_switch.png" type="normal" rightOption=false>
+              <div class="rightSwitch">
+                <div class="switch">
+                  <Rectangular-Switch type="RectangleSwitch" enable="0" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                </div>
+                <div class="switch">
+                  <Rectangular-Switch type="RectangleSwitch" enable="1" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                </div>
+              </div>
+            </Module-Frame>
+          </div>
+        </div>
         <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=true @rightOptionEvent="superAdmin ? changeNickname(true) : changeNickname(false)">
           <ul class="switchGroup">
             <li>
@@ -65,7 +91,7 @@
 import { mapState } from "vuex";
 import HonYar from "@/utils/WebAPI";
 import axios from "axios";
-import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle,ListItemInput,InsideLineDividingStrip } from "@/component_library";
+import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlider,TimeSelect,ListItem,GrayDividingStrip,ListModal,AnimationFrame,ListItemLarge,RoundSwitch,RoundBottonFrame,RoundEdgesTransverseRectangle,ListItemInput,InsideLineDividingStrip,RectangularSwitch } from "@/component_library";
 
 /**
  * 
@@ -93,7 +119,8 @@ export default {
     "Round-Botton-Frame":RoundBottonFrame,
     "Round-Edges-Transverse-Rectangle":RoundEdgesTransverseRectangle,
     "List-Item-Input":ListItemInput,
-    "Inside-Line-Dividing-Strip":InsideLineDividingStrip
+    "Inside-Line-Dividing-Strip":InsideLineDividingStrip,
+    "Rectangular-Switch":RectangularSwitch
   },
   data() {
     return {
@@ -232,13 +259,13 @@ export default {
     },
     changeSwitchType(pk){
       switch (pk) {
-        case "a1BqBAOw2ii":
+        case "a1V9RC5hvfW":
           this.switchType = 1;
           break;
-        case "a1mTtj3XyVA":
+        case "a1H5zYD0dI9":
           this.switchType = 2;
           break;
-        case "a1T6JIBWh5o":
+        case "a10rNqQLbXN":
           this.switchType = 3;
           break;
         default:
@@ -355,6 +382,7 @@ export default {
     this.monitor_report();
     let wait_data = setInterval(()=>{
       if(JSON.stringify(_this.deviceInfo) !== '{}'){
+        
         //在线状态
         _this.dev_props.online = Number(_this.deviceInfo.status) == 1 ? true : false
         _this.changeSwitchType(_this.deviceInfo.productKey)
@@ -419,6 +447,57 @@ export default {
 .topClear{
   width: 100%;
   height: 120px;
+}
+.topSwitchGroup{
+  width: 100%;
+  height: 365px;
+  display: flex;
+  flex-direction: row;
+  $switchGroupHeight:150px;
+  .leftGroup{
+    width: 288px;
+    height: 100%;
+    .leftSwitch{
+      $leftGroupWidth:288px;
+      border-right: 1px solid#E5E5E5;
+      display: flex;
+      flex-direction: column;
+      .switch{
+        width: $leftGroupWidth;
+        height:147.5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .switch:nth-child(1){
+        padding-top: 40px;
+      }
+      .switch:nth-child(2){
+        padding-bottom: 40px;
+      }
+    }
+  }
+  .rightGroup{
+    width: 462px;
+    height: 100%;
+    .rightSwitch{
+      display: flex;
+      flex-direction: row;
+      .switch{
+        width: 231px;
+        height: 295px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .switch:nth-child(1){
+        padding-left: 50px;
+      }
+      .switch:nth-child(2){
+        padding-right: 50px;
+      }
+    }
+  }
 }
 .switchGroup{
   width: 100%;
