@@ -46,8 +46,6 @@ export default {
     },
     methods:{
         input(){
-            console.log(this.placeholderValue)
-
             let pattern = /[^\u4e00-\u9fa5a-zA-Z0-9]/g
             if(this.newValue.length === 0){
                 this.$emit("input",this.placeholderValue)
@@ -56,7 +54,6 @@ export default {
                 if(this.newValue.length > 15){
                     this.newValue = this.newValue.slice(0,15)
                 }
-                console.log("2",this.newValue)
                 this.$emit("input",this.newValue)
             }
         }

@@ -26,7 +26,6 @@ export default {
                     this.state = Number(newVal)
                     this.changeStyle()
                 }
-                
             },
             immediate:true,
             deep:true

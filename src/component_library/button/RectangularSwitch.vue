@@ -1,12 +1,12 @@
 <template>
     <div class="RectangularSwitch" >
-        <div class="SquareSwitch" :class="{'open':state == 1,'close':state == 0}"  v-if="show == 0" @click="change()">
+        <div class="SquareSwitch" :class="{'open':enable == 1,'close':enable == 0}"  v-if="show == 0" @click="change()">
             <img v-if="now_icon !== ''" class="SquareSwitch_icon"  :src="require('@/assets/images/icon/button/'+now_icon)" alt="按钮图标" >
-            <div class="state_value" :class="{'open_text':state == 1,'close_text':state == 0}">{{state_value}}</div>
+            <div class="state_value" :class="{'open_text':enable == 1,'close_text':enable == 0}">{{state_value}}</div>
         </div>
-        <div class="RectangleSwitch" :class="{'open':state == 1,'close':state == 0}"  v-if="show == 1" @click="change()">
+        <div class="RectangleSwitch" :class="{'open':enable == 1,'close':enable == 0}"  v-if="show == 1" @click="change()">
             <img v-if="now_icon !== ''" class="icon"  :src="require('@/assets/images/icon/button/'+now_icon)" alt="按钮图标" >
-            <div class="state_value" :class="{'open_text':state == 1,'close_text':state == 0}">{{state_value}}</div>
+            <div class="state_value" :class="{'open_text':enable == 1,'close_text':enable == 0}">{{state_value}}</div>
         </div>
     </div>
 </template>
@@ -23,16 +23,29 @@ export default {
         "category",
         "openIcon",
         "closeIcon",
-        "enable"
+        "state",
+        "name"
     ],
     watch:{
-        enable:{
-            handler(oldVal,newVal){
-                if(oldVal !== undefined){
-                    this.state = Number(oldVal)
+        state:{
+            handler(newVal,oldVal){
+                if(newVal !== undefined){
+                    this.enable = newVal
                     this.changeStyle()
                 }
-            }
+            },
+            deep:true,
+            immediate:true
+        },
+        name:{
+            handler(newVal,oldVal){
+                if(newVal !== undefined){
+                    this.state_value = newVal
+                    this.changeStyle()
+                }
+            },
+            deep:true,
+            immediate:true
         }
     },
     data(){
@@ -40,23 +53,23 @@ export default {
             open:"",
             close:"",
             now_icon:"",
-            state:0,
-            state_value:"打开",
+            enable:0,
+            state_value:this.name,
             show:0,
         }
     },
     methods:{
         changeStyle(){
-            this.state == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open)
-            this.state == 0 ? this.$set(this,"state_value","关闭") : this.$set(this,"state_value","打开")
+            this.enable == 0 ? this.$set(this,"now_icon",this.close) : this.$set(this,"now_icon",this.open)
+            //this.state == 0 ? this.$set(this,"state_value","关闭") : this.$set(this,"state_value","打开")
         },
         change(){
             // this.state == 0 ? this.state = 1 : this.state = 0;
-            
+            this.$emit("event")
         }
     },
     mounted(){
-
+        this.changeStyle()
     },
     created(){
         switch(this.type){

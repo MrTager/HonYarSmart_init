@@ -9,15 +9,16 @@
         <List-Modal v-if="flag.showChangeNameModel" title="编辑昵称" @confirm="changeNameConfirm" @cancel="changeNameCancel">
           <List-Item-Input v-for="(value,key,index) in dev_props.childPropName" :key="index" :title="value.propName" :placeholder="value.nickName"  @input="changePropName(key,$event)"></List-Item-Input>
         </List-Modal>
-        <div class="topSwitchGroup">
+        <div v-if="switchType === 2 || switchType === 3">
+          <div class="topSwitchGroup">
           <div class="leftGroup">
             <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=false>
               <div class="leftSwitch">
                 <div class="switch">
-                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(1,'indicator')" title="全开" ></Round-Edges-Transverse-Rectangle>
+                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(1,'switch_all')" title="全开" ></Round-Edges-Transverse-Rectangle>
                 </div>
                 <div class="switch">
-                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(1,'indicator')" title="全关" ></Round-Edges-Transverse-Rectangle>
+                  <Round-Edges-Transverse-Rectangle :state="0" @event="changeSwitch(0,'switch_all')" title="全关" ></Round-Edges-Transverse-Rectangle>
                 </div>
               </div>
             </Module-Frame>
@@ -26,10 +27,10 @@
             <Module-Frame titleName="开关类型" titleImg="title_switch.png" type="normal" rightOption=false>
               <div class="rightSwitch">
                 <div class="switch">
-                  <Rectangular-Switch type="RectangleSwitch" enable="0" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                  <Rectangular-Switch type="RectangleSwitch" name="翘板按键" :enable="dev_props.switch_type === 1 ? 1 : 0" @event="changeSwitch(1,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
                 </div>
                 <div class="switch">
-                  <Rectangular-Switch type="RectangleSwitch" enable="1" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                  <Rectangular-Switch type="RectangleSwitch" name="自复位按键" :enable="dev_props.switch_type === 0 ? 1 : 0" @event="changeSwitch(0,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
                 </div>
               </div>
             </Module-Frame>
@@ -48,6 +49,22 @@
             </li>
           </ul>
         </Module-Frame>
+        </div>
+        <div v-if="switchType === 1">
+        <Module-Frame titleName="开关" titleImg="title_switch.png" type="normal" rightOption=true @rightOptionEvent="superAdmin ? changeNickname(true) : changeNickname(false)">
+          <ul class="switchGroup">
+            <li>
+              <Round-Botton-Frame :propName="dev_props.childPropName.powerstate_1"  :state="dev_props.powerstate_1" @event="changeSwitch($event,'powerstate_1')"></Round-Botton-Frame>
+            </li>
+            <li>
+              <Rectangular-Switch type="RectangleSwitch" name="翘板按键" :state="dev_props.switch_type === 1 ? 1 : 0" @event="changeSwitch(1,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+            </li>
+            <li>
+              <Rectangular-Switch type="RectangleSwitch" name="自复位按键" :state="dev_props.switch_type === 0 ? 1 : 0" @event="changeSwitch(0,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+            </li>
+          </ul>
+        </Module-Frame>
+        </div>
         <Module-Frame titleName="指示灯" titleImg="title_switch.png" type="normal">
           <ul class="ledSwitch">
             <li>
@@ -98,7 +115,6 @@ import { ModuleFrame,OffLine,HeaderBar,DropDownRefresh,MainPowerSwitch,WideSlide
  * v-if="JSON.stringify(deviceInfo) !== '{}' && JSON.stringify(homeInfo) !== '{}'"
  * 只有管理员可以显示定时倒计时
  */
-
 export default {
   name: "Main",
   title: "Pagination",
@@ -129,6 +145,7 @@ export default {
         powerstate_1:0,
         powerstate_2:0,
         powerstate_3:0,
+        switch_type:0,
         indicator:0,
         power_off_memory:0,
         childPropName:{powerstate_1:{propName:"开关一",nickName:"",id:""},powerstate_2:{propName:"开关二",nickName:"",id:""},powerstate_3:{propName:"开关三",nickName:"",id:""}},
@@ -244,7 +261,7 @@ export default {
         HonYar.show_toast("非设备管理员没有权限操作")
       }
     },
-    changeSwitch(e,propName){
+    changeSwitch(e,propName,prop){
       let _this = this;
       const iotId = _this.deviceInfo.iotId;
       let item = {
@@ -287,6 +304,7 @@ export default {
       _this.$set(_this.dev_props,'powerstate_1',deviceProps.powerstate_1)
       _this.$set(_this.dev_props,'powerstate_2',deviceProps.powerstate_2)
       _this.$set(_this.dev_props,'powerstate_3',deviceProps.powerstate_3)
+      _this.$set(_this.dev_props,'switch_type',deviceProps.switch_type)
       _this.$set(_this.dev_props,'indicator',deviceProps.indicator)
       _this.$set(_this.dev_props,'power_off_memory',deviceProps.power_off_memory)
     },
