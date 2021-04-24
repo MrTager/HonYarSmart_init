@@ -27,10 +27,10 @@
             <Module-Frame titleName="开关类型" titleImg="title_switch.png" type="normal" rightOption=false>
               <div class="rightSwitch">
                 <div class="switch">
-                  <Rectangular-Switch type="RectangleSwitch" name="翘板按键" :enable="dev_props.switch_type === 1 ? 1 : 0" @event="changeSwitch(1,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                  <Rectangular-Switch type="RectangleSwitch" name="翘板按键" :state="dev_props.switch_type === 1 ? 1 : 0" @event="changeSwitch(1,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
                 </div>
                 <div class="switch">
-                  <Rectangular-Switch type="RectangleSwitch" name="自复位按键" :enable="dev_props.switch_type === 0 ? 1 : 0" @event="changeSwitch(0,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
+                  <Rectangular-Switch type="RectangleSwitch" name="自复位按键" :state="dev_props.switch_type === 0 ? 1 : 0" @event="changeSwitch(0,'switch_type')" openIcon="lightCtrlOpen.png" closeIcon="lightCtrlClose.png"></Rectangular-Switch>
                 </div>
               </div>
             </Module-Frame>
@@ -246,7 +246,7 @@ export default {
         return Number(str) - Number(str2)
       })
       let finalObject = new Object();
-      powerStateArr.forEach(iten => {
+      powerStateArr.forEach(iten => { 
         finalObject = Object.assign(finalObject,iten)
       })
       _this.$set(_this.dev_props,"childPropName",finalObject)
@@ -254,6 +254,8 @@ export default {
     //change nickname
     changeNickname(flag){
       let _this = this;
+     
+      // this.childPropName();
       if(flag){
         this.flag.showChangeNameModel = true
         this.dev_props.newChildPropName = JSON.parse(JSON.stringify(this.dev_props.childPropName))
@@ -261,7 +263,7 @@ export default {
         HonYar.show_toast("非设备管理员没有权限操作")
       }
     },
-    changeSwitch(e,propName,prop){
+    changeSwitch(e,propName){
       let _this = this;
       const iotId = _this.deviceInfo.iotId;
       let item = {

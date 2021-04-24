@@ -2,7 +2,7 @@
     <div class="ListItemInput">
         <div class="title" :style="{color:chick_flag ? 'rgb(0, 0, 0, 1)' : 'rgba(0, 208, 186, 1)'}">{{title_content}}</div>
         <span>{{titleName}}:</span>
-        <input type="text" :placeholder="placeholderValue" v-model="newValue" @input="input">
+        <input ref="inputContent" type="text" :placeholder="placeholderValue" v-model="newValue" @input="input">
     </div>
 </template>
 <script>
@@ -46,13 +46,14 @@ export default {
     },
     methods:{
         input(){
+            this.$refs.inputContent.focus(); 
             let pattern = /[^\u4e00-\u9fa5a-zA-Z0-9]/g
             if(this.newValue.length === 0){
                 this.$emit("input",this.placeholderValue)
             }else{
                 this.newValue = this.newValue.replace(pattern, '')
                 if(this.newValue.length > 15){
-                    this.newValue = this.newValue.slice(0,15)
+                    this.newValue = this.newValue.slice(0,15)                                                                                   
                 }
                 this.$emit("input",this.newValue)
             }
@@ -94,6 +95,7 @@ export default {
         @include inputStyle();
         @include oneLineTextStyle(60%,80px,35px,#303942);
         text-align: left;
+        -webkit-user-select: text;
     }
     input:focus{
         @include inputFocusStyle();
